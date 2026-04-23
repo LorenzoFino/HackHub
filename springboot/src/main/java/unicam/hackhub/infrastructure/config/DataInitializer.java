@@ -75,6 +75,9 @@ public class DataInitializer implements ApplicationRunner {
                 Set.of(mentor)
         );
 
+        // Register team to hackathon
+        hackathon.registerTeam(team);
+
         hackathonRepository.save(hackathon);
 
         // Create support request
