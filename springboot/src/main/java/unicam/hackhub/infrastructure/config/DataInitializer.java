@@ -22,22 +22,29 @@ public class DataInitializer implements ApplicationRunner {
     private final UserRepository userRepository;
     private final HackathonRepository hackathonRepository;
     private final SupportRequestRepository supportRequestRepository;
+    private final InvitationRepository invitationRepository;
+    private final ReportRepository reportRepository;
 
     public DataInitializer(StaffRepository staffRepository,
                            TeamRepository teamRepository,
                            UserRepository userRepository,
                            HackathonRepository hackathonRepository,
-                           SupportRequestRepository supportRequestRepository) {
+                           SupportRequestRepository supportRequestRepository,
+                           InvitationRepository invitationRepository,
+                           ReportRepository reportRepository) {
         this.staffRepository = staffRepository;
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
         this.hackathonRepository = hackathonRepository;
         this.supportRequestRepository = supportRequestRepository;
+        this.invitationRepository = invitationRepository;
+        this.reportRepository = reportRepository;
     }
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
-        // Create staff
+        // Create staff members
         Organizer organizer = new Organizer("Mario", "Rossi", "mario@hackhub.com", "password");
         Judge judge = new Judge("Anna", "Bianchi", "anna@hackhub.com", "password");
         Mentor mentor = new Mentor("Luca", "Verdi", "luca@hackhub.com", "password");
@@ -47,19 +54,32 @@ public class DataInitializer implements ApplicationRunner {
         staffRepository.save(mentor);
 
         // Create users
+        // user1 — creator of TeamAlpha, registered to hackathon
         User user1 = new User("Giuseppe", "giuseppe@mail.com", "password");
+        // user2 — creator of TeamBeta, not registered to any hackathon (useful for invitation tests)
         User user2 = new User("Sara", "sara@mail.com", "password");
+        // user3 — no team, useful for testing invitations
+        User user3 = new User("Marco", "marco@mail.com", "password");
 
         userRepository.save(user1);
         userRepository.save(user2);
+        userRepository.save(user3);
 
-        // Create team
+        // Create TeamAlpha — registered to hackathon
         Team team = new Team("TeamAlpha", user1);
         user1.setTeam(team);
         teamRepository.save(team);
         userRepository.save(user1);
 
-        // Create hackathon
+        // Create TeamBeta — not registered to any hackathon
+        // Useful for testing: send invitation, leave team, delete team
+        Team team2 = new Team("TeamBeta", user2);
+        user2.setTeam(team2);
+        teamRepository.save(team2);
+        userRepository.save(user2);
+
+        // Create hackathon in SUBSCRIPTION state
+        // Useful for testing: register team, unregister team
         Hackathon hackathon = new Hackathon(
                 "HackHub 2026",
                 "A university hackathon",
@@ -75,12 +95,33 @@ public class DataInitializer implements ApplicationRunner {
                 Set.of(mentor)
         );
 
-        // Register team to hackathon
+        // Register TeamAlpha to hackathon
         hackathon.registerTeam(team);
-
         hackathonRepository.save(hackathon);
 
-        // Create support request
+        // Create hackathon in PROGRESS state
+        // Useful for testing: report team, manage violations
+        Hackathon hackathonInProgress = new Hackathon(
+                "HackHub Progress 2026",
+                "A hackathon currently in progress",
+                "No cheating allowed",
+                LocalDate.now().minusDays(10),
+                LocalDate.now().minusDays(3),
+                new Period(LocalDate.now().minusDays(2), LocalDate.now().plusDays(5)),
+                "Camerino",
+                5,
+                2000.0,
+                organizer,
+                judge,
+                Set.of(mentor)
+        );
+
+        // Register TeamAlpha and advance state to PROGRESS
+        hackathonInProgress.registerTeam(team);
+        hackathonInProgress.toNextState();
+        hackathonRepository.save(hackathonInProgress);
+
+        // Create support request for main hackathon
         SupportRequest supportRequest = new SupportRequest(
                 "Need help with the project structure",
                 LocalDate.now(),
@@ -89,7 +130,21 @@ public class DataInitializer implements ApplicationRunner {
         );
         supportRequestRepository.save(supportRequest);
 
-        System.out.println("[DataInitializer] Test data loaded successfully");
+        // Create pending invitation — user3 invited to TeamBeta
+        // Useful for testing: accept invitation, decline invitation
+        Invitation invitation = new Invitation(user3, team2, LocalDate.now());
+        invitationRepository.save(invitation);
+
+        // Create pending report for hackathon in PROGRESS
+        // Useful for testing: manage violations with and without team exclusion
+        Report report = new Report(
+                "Team is cheating by using external code",
+                LocalDate.now(),
+                mentor,
+                team,
+                hackathonInProgress
+        );
+        reportRepository.save(report);
 
         System.out.println("[DataInitializer] Test data loaded successfully");
     }
