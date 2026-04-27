@@ -1,7 +1,7 @@
 package unicam.hackhub.application.hackathon;
 
 import unicam.hackhub.domain.model.Hackathon;
-import unicam.hackhub.domain.model.Staff;
+import unicam.hackhub.domain.model.RoleAssignment;
 
 import java.util.List;
 
@@ -28,4 +28,15 @@ public interface HackathonService {
 
     /** Advances the hackathon to the next state */
     void toNextState(Long hackathonId);
+
+    /**
+     * Assigns a role to a staff member for a specific hackathon.
+     * A staff member can hold different roles in different hackathons.
+     *
+     * @param hackathonId   id of the hackathon
+     * @param membroStaffId id of the staff member
+     * @param role         role name (e.g. "ORGANIZER", "JUDGE", "MENTOR")
+     * @return the created RoleAssignment
+     */
+    RoleAssignment roleAssign(Long hackathonId, Long membroStaffId, String role);
 }
