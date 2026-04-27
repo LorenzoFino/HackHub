@@ -100,13 +100,12 @@ public class DataInitializer implements ApplicationRunner {
         hackathonRepository.save(hackathon);
 
         // Create hackathon in PROGRESS state
-        // Useful for testing: report team, manage violations
         Hackathon hackathonInProgress = new Hackathon(
                 "HackHub Progress 2026",
                 "A hackathon currently in progress",
                 "No cheating allowed",
-                LocalDate.now().minusDays(10),
-                LocalDate.now().minusDays(3),
+                LocalDate.now().minusDays(10),  // registrationOpenDate
+                LocalDate.now().plusDays(30),   // registrationDeadline — future
                 new Period(LocalDate.now().minusDays(2), LocalDate.now().plusDays(5)),
                 "Camerino",
                 5,
@@ -116,7 +115,7 @@ public class DataInitializer implements ApplicationRunner {
                 Set.of(mentor)
         );
 
-        // Register TeamAlpha and advance state to PROGRESS
+// Register TeamAlpha first, then advance state to PROGRESS
         hackathonInProgress.registerTeam(team);
         hackathonInProgress.toNextState();
         hackathonRepository.save(hackathonInProgress);

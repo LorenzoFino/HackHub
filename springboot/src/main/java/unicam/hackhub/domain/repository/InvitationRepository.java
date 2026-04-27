@@ -12,6 +12,8 @@ public interface InvitationRepository {
 
     Invitation save(Invitation invitation);
 
+    void deleteAll(List<Invitation> invitations);
+
     Optional<Invitation> findById(Long id);
 
     List<Invitation> findAllByTeam_Name(String teamName);

@@ -135,13 +135,9 @@ public class TeamServiceImpl implements TeamService {
         if (hackathonRepository.existsByRegisteredTeams_Name(teamName))
             throw new IllegalStateException("Cannot delete a team that is registered in a hackathon");
 
-        // Cancel all pending invitations for this team
-        List<Invitation> pendingInvitations = invitationRepository
-                .findAllByTeam_NameAndStatus(teamName, Invitation.InvitationStatus.PENDING);
-        for (Invitation inv : pendingInvitations) {
-            inv.setStatus(Invitation.InvitationStatus.DECLINED);
-            invitationRepository.save(inv);
-        }
+        // Cancel ALL invitations for this team regardless of status
+        List<Invitation> allInvitations = invitationRepository.findAllByTeam_Name(teamName);
+        invitationRepository.deleteAll(allInvitations);
 
         // Detach all members from the team
         for (User member : team.getMembers()) {
