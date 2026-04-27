@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface ReportService {
     /**
-     * Mentor reports a tteam forr a ruel violation
+     * Mentor reports a team for a rule violation
      * Only allowed when the hackathon is in PROGRESS state
      *
      * @param mentorEmail email of the mentor filing the report
