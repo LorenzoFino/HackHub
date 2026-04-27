@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import unicam.hackhub.application.hackathon.HackathonService;
 import unicam.hackhub.domain.model.Hackathon;
+import unicam.hackhub.domain.model.RoleAssignment;
 
 import java.util.List;
 
@@ -62,5 +63,14 @@ public class HackathonController {
     public ResponseEntity<Void> toNextState(@PathVariable Long id) {
         hackathonService.toNextState(id);
         return ResponseEntity.ok().build();
+    }
+
+    /** POST /api/v1/hackathons/{id}/staff/{staffId}/role — assigns a role to a staff member */
+    @PostMapping("/{id}/staff/{staffId}/ruolo")
+    public ResponseEntity<RoleAssignment> roleAssign(@PathVariable Long id,
+                                                          @PathVariable Long staffId,
+                                                          @RequestParam String role) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(hackathonService.roleAssign(id, staffId, role));
     }
 }
