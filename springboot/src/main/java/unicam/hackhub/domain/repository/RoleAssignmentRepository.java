@@ -12,7 +12,10 @@ import java.util.Optional;
 public interface RoleAssignmentRepository {
 
     RoleAssignment save(RoleAssignment assignment);
+
     Optional<RoleAssignment> findById(Long id);
+
     List<RoleAssignment> findAllByHackathonId(Long hackathonId);
+
     List<RoleAssignment> findAllByStaffId(Long staffId);
 }
