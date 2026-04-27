@@ -15,4 +15,6 @@ public interface TeamRepository {
     Optional<Team> findById(String name);
 
     boolean existsById(String name);
+
+    void delete(Team team);
 }

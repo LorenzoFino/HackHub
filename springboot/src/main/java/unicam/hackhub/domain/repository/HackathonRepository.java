@@ -18,4 +18,7 @@ public interface HackathonRepository {
     List<Hackathon> findAll();
 
     void delete(Hackathon hackathon);
+
+    /**Returns true if the team (by name) is registered in any hackathon */
+    boolean existsByRegisteredTeams_Name(String teamName);
 }
