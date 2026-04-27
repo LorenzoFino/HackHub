@@ -12,7 +12,7 @@ public interface InvitationRepository {
 
     Invitation save(Invitation invitation);
 
-    void deleteAll(List<Invitation> invitations);
+    void delete(Invitation invitation);
 
     Optional<Invitation> findById(Long id);
 

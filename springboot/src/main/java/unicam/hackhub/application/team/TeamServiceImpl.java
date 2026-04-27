@@ -137,7 +137,9 @@ public class TeamServiceImpl implements TeamService {
 
         // Cancel ALL invitations for this team regardless of status
         List<Invitation> allInvitations = invitationRepository.findAllByTeam_Name(teamName);
-        invitationRepository.deleteAll(allInvitations);
+        for (Invitation inv : allInvitations) {
+            invitationRepository.delete(inv);
+        }
 
         // Detach all members from the team
         for (User member : team.getMembers()) {
