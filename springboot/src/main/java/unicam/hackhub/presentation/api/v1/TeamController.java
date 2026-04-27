@@ -21,13 +21,17 @@ public class TeamController {
         this.teamService = teamService;
     }
 
-    /** GET /api/v1/teams/{name} — returns a team by name */
+    /**
+     * GET /api/v1/teams/{name} — returns a team by name
+     */
     @GetMapping("/{name}")
     public ResponseEntity<Team> getByName(@PathVariable String name) {
         return ResponseEntity.ok(teamService.findByName(name));
     }
 
-    /** POST /api/v1/teams — creates a new team */
+    /**
+     * POST /api/v1/teams — creates a new team
+     */
     @PostMapping
     public ResponseEntity<Team> create(@RequestParam String teamName,
                                        @RequestParam String userEmail) {
@@ -35,7 +39,9 @@ public class TeamController {
                 .body(teamService.createTeam(teamName, userEmail));
     }
 
-    /** POST /api/v1/teams/{name}/invitations — sends an invitation */
+    /**
+     * POST /api/v1/teams/{name}/invitations — sends an invitation
+     */
     @PostMapping("/{name}/invitations")
     public ResponseEntity<Invitation> sendInvitation(@PathVariable String name,
                                                      @RequestParam String recipientEmail) {
@@ -43,17 +49,51 @@ public class TeamController {
                 .body(teamService.sendInvitation(name, recipientEmail));
     }
 
-    /** POST /api/v1/teams/invitations/{id}/accept — accepts an invitation */
+    /**
+     * POST /api/v1/teams/invitations/{id}/accept — accepts an invitation
+     */
     @PostMapping("/invitations/{id}/accept")
     public ResponseEntity<Void> acceptInvitation(@PathVariable Long id) {
         teamService.acceptInvitation(id);
         return ResponseEntity.ok().build();
     }
 
-    /** POST /api/v1/teams/invitations/{id}/decline — declines an invitation */
+    /**
+     * POST /api/v1/teams/invitations/{id}/decline — declines an invitation
+     */
     @PostMapping("/invitations/{id}/decline")
     public ResponseEntity<Void> declineInvitation(@PathVariable Long id) {
         teamService.declineInvitation(id);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * POST /api/v1/teams/{name}/leave — a non-creator member leaves the team
+     */
+    @PostMapping("/{name}/leave")
+    public ResponseEntity<Void> leaveTeam(@PathVariable String name,
+                                          @RequestParam String userEmail) {
+        teamService.leaveTeam(name, userEmail);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * DELETE /api/v1/teams/{name} — creator deletes the team
+     */
+    @DeleteMapping("/{name}")
+    public ResponseEntity<Void> deleteTeam(@PathVariable String name,
+                                           @RequestParam String creatorEmail) {
+        teamService.deleteTeam(name, creatorEmail);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * DELETE /api/v1/teams/{name}/hackathons/{hackathonId} — unregisters team from hackathon
+     */
+    @DeleteMapping("/{name}/hackathons/{hackathonId}")
+    public ResponseEntity<Void> deleteHackathon(@PathVariable String name,
+                                                @PathVariable Long hackathonId) {
+        teamService.unregisterTeam(name, hackathonId);
         return ResponseEntity.ok().build();
     }
 }
