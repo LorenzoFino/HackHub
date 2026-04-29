@@ -23,17 +23,23 @@ public class Team {
     @OneToMany(mappedBy = "team", cascade = {CascadeType.MERGE, CascadeType.REFRESH})
     private Set<User> members = new HashSet<>();
 
+    @Setter
     @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_email")
     private User creator;
 
+    @Setter
     @Getter
     private double balance;
 
+    @Setter
+    @Getter
     @Column(nullable = false)
     private LocalDate registrationDate;
 
+    @Setter
+    @Getter
     @Column(nullable = false)
     private int numMembers;
 

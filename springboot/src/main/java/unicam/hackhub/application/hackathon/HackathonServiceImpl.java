@@ -72,11 +72,11 @@ public class HackathonServiceImpl implements HackathonService {
     }
 
     @Override
-    public RoleAssignment roleAssign(Long hackathonId, Long membroStaffId, String role) {
+    public RoleAssignment roleAssign(Long hackathonId, Long memberStaffId, String role) {
         Hackathon hackathon = findById(hackathonId);
 
-        Staff staff = staffRepository.findById(membroStaffId)
-                .orElseThrow(() -> new IllegalArgumentException("Staff member not found: " + membroStaffId));
+        Staff staff = staffRepository.findById(memberStaffId)
+                .orElseThrow(() -> new IllegalArgumentException("Staff member not found: " + memberStaffId));
 
         RoleAssignment assignment = new RoleAssignment(role, staff, hackathon);
         return roleAssignmentRepository.save(assignment);

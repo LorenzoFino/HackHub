@@ -18,14 +18,11 @@ import java.util.List;
 public class ValuationServiceImpl implements ValuationService {
 
     private final ValuationRepository valuationRepository;
-    private final SubmissionRepository submissionRepository;
     private final HackathonRepository hackathonRepository;
 
     public ValuationServiceImpl(ValuationRepository valuationRepository,
-                                SubmissionRepository submissionRepository,
                                 HackathonRepository hackathonRepository) {
         this.valuationRepository = valuationRepository;
-        this.submissionRepository = submissionRepository;
         this.hackathonRepository = hackathonRepository;
     }
 

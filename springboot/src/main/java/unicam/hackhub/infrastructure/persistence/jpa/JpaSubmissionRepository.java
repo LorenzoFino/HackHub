@@ -16,7 +16,5 @@ import java.util.Optional;
 @Repository
 public interface JpaSubmissionRepository extends JpaRepository<Submission, Long>, SubmissionRepository {
 
-    Optional<Submission> findByTeamAndHackathon(Team team, Hackathon hackathon);
-
     List<Submission> findAllByHackathonId(Long hackathonId);
 }
