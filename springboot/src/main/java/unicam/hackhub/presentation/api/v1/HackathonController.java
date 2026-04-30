@@ -73,4 +73,18 @@ public class HackathonController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(hackathonService.roleAssign(id, staffId, role));
     }
+
+    /** PUT /api/v1/hackathons/{id} — updates an existing hackathon (only during SUBSCRIPTION) */
+    @PutMapping("/{id}")
+    public ResponseEntity<Hackathon> update(@PathVariable Long id,
+                                            @RequestBody Hackathon hackathon) {
+        return ResponseEntity.ok(hackathonService.updateHackathon(id, hackathon));
+    }
+
+    /** DELETE /api/v1/hackathons/{id} — deletes a hackathon (only during SUBSCRIPTION) */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        hackathonService.deleteHackathon(id);
+        return ResponseEntity.ok().build();
+    }
 }
