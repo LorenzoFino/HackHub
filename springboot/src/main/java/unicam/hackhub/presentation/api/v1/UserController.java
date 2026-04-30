@@ -4,7 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import unicam.hackhub.application.submission.SubmissionService;
+import unicam.hackhub.domain.model.Hackathon;
 import unicam.hackhub.domain.model.Submission;
+import unicam.hackhub.domain.model.Team;
 
 import java.util.List;
 
@@ -37,7 +39,25 @@ public class UserController {
 
     /** POST /api/v1/submissions — sends a new submission */
     @PostMapping
-    public ResponseEntity<Submission> send(@RequestBody Submission submission) {
+    public ResponseEntity<Submission> send(@RequestParam String teamName,
+                                           @RequestParam Long hackathonId,
+                                           @RequestParam String title,
+                                           @RequestParam String description,
+                                           @RequestParam String link) {
+        Submission submission = new Submission();
+        submission.setTitle(title);
+        submission.setDescription(description);
+        submission.setLink(link);
+        submission.setSubmissionDate(java.time.LocalDate.now());
+
+        Team team = new Team();
+        team.setName(teamName);
+        submission.setTeam(team);
+
+        Hackathon hackathon = new Hackathon();
+        hackathon.setId(hackathonId);
+        submission.setHackathon(hackathon);
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(submissionService.sendSubmission(submission));
     }

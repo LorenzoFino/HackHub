@@ -24,6 +24,7 @@ public class DataInitializer implements ApplicationRunner {
     private final SupportRequestRepository supportRequestRepository;
     private final InvitationRepository invitationRepository;
     private final ReportRepository reportRepository;
+    private final SubmissionRepository submissionRepository;
 
     public DataInitializer(StaffRepository staffRepository,
                            TeamRepository teamRepository,
@@ -31,7 +32,8 @@ public class DataInitializer implements ApplicationRunner {
                            HackathonRepository hackathonRepository,
                            SupportRequestRepository supportRequestRepository,
                            InvitationRepository invitationRepository,
-                           ReportRepository reportRepository) {
+                           ReportRepository reportRepository,
+                           SubmissionRepository submissionRepository) {
         this.staffRepository = staffRepository;
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
@@ -39,6 +41,7 @@ public class DataInitializer implements ApplicationRunner {
         this.supportRequestRepository = supportRequestRepository;
         this.invitationRepository = invitationRepository;
         this.reportRepository = reportRepository;
+        this.submissionRepository = submissionRepository;;
     }
 
     @Override
@@ -106,7 +109,7 @@ public class DataInitializer implements ApplicationRunner {
                 "No cheating allowed",
                 LocalDate.now().minusDays(10),  // registrationOpenDate
                 LocalDate.now().plusDays(30),   // registrationDeadline — future
-                new Period(LocalDate.now().minusDays(2), LocalDate.now().plusDays(5)),
+                new Period(LocalDate.now().minusDays(5), LocalDate.now().minusDays(1)),
                 "Camerino",
                 5,
                 2000.0,
@@ -117,7 +120,23 @@ public class DataInitializer implements ApplicationRunner {
 
         // Register TeamAlpha first, then advance state to PROGRESS
         hackathonInProgress.registerTeam(team);
-        hackathonInProgress.toNextState();
+        // Force state to PROGRESS manually
+        hackathonInProgress.getStatus().setCurrentState(HackathonStatus.StateType.PROGRESS);
+        hackathonRepository.save(hackathonInProgress);
+
+        // Add test submission while in PROGRESS
+        Submission submission = new Submission(
+                "My Project",
+                "A great project",
+                "https://github.com/test",
+                LocalDate.now(),
+                team,
+                hackathonInProgress
+        );
+        submissionRepository.save(submission);
+
+        // Force state to EVALUATION manually
+        hackathonInProgress.getStatus().setCurrentState(HackathonStatus.StateType.EVALUATION);
         hackathonRepository.save(hackathonInProgress);
 
         // Create support request for main hackathon

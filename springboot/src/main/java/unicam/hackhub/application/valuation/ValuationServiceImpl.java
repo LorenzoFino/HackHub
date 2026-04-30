@@ -19,24 +19,33 @@ public class ValuationServiceImpl implements ValuationService {
 
     private final ValuationRepository valuationRepository;
     private final HackathonRepository hackathonRepository;
+    private final SubmissionRepository submissionRepository;
 
     public ValuationServiceImpl(ValuationRepository valuationRepository,
-                                HackathonRepository hackathonRepository) {
+                                HackathonRepository hackathonRepository,
+                                SubmissionRepository submissionRepository) {
         this.valuationRepository = valuationRepository;
         this.hackathonRepository = hackathonRepository;
+        this.submissionRepository = submissionRepository;
     }
 
     @Override
     public Valuation releaseValuation(Valuation valuation) {
-        Hackathon hackathon = hackathonRepository
-                .findById(valuation.getSubmission().getHackathon().getId())
+        // Load full submission from DB
+        Submission submission = submissionRepository.findById(valuation.getSubmission().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Submission not found"));
+
+        Hackathon hackathon = hackathonRepository.findById(submission.getHackathon().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Hackathon not found"));
 
         hackathon.valuateSubmission(
-                valuation.getSubmission().getTeam().getName(),
+                submission.getTeam().getName(),
                 valuation.getVote(),
                 valuation.getJudgement()
         );
+
+        valuation.setSubmission(submission);
+        valuation.setDate(java.time.LocalDate.now());
 
         hackathonRepository.save(hackathon);
         return valuationRepository.save(valuation);

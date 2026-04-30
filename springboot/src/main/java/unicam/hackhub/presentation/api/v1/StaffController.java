@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import unicam.hackhub.application.valuation.ValuationService;
+import unicam.hackhub.domain.model.Judge;
+import unicam.hackhub.domain.model.Submission;
 import unicam.hackhub.domain.model.Valuation;
 
 import java.util.List;
@@ -30,7 +32,23 @@ public class StaffController {
 
     /** POST /api/v1/valuations — releases a new valuation */
     @PostMapping
-    public ResponseEntity<Valuation> release(@RequestBody Valuation valuation) {
+    public ResponseEntity<Valuation> release(@RequestParam Long submissionId,
+                                             @RequestParam Long judgeId,
+                                             @RequestParam Integer vote,
+                                             @RequestParam String judgement) {
+        Valuation valuation = new Valuation();
+        valuation.setVote(vote);
+        valuation.setJudgement(judgement);
+        valuation.setDate(java.time.LocalDate.now());
+
+        Submission submission = new Submission();
+        submission.setId(submissionId);
+        valuation.setSubmission(submission);
+
+        Judge judge = new Judge();
+        judge.setId(judgeId);
+        valuation.setJudge(judge);
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(valuationService.releaseValuation(valuation));
     }
