@@ -145,6 +145,27 @@ public class DataInitializer implements ApplicationRunner {
         );
         reportRepository.save(report);
 
+        // IT4 — Create hackathon in EVALUATION state
+        // Useful for testing: modifica valutazione, proclama vincitore, eroga premio
+        Hackathon hackathonInEvaluation = new Hackathon(
+                "HackHub Evaluation 2026",
+                "A hackathon in evaluation phase",
+                "No cheating allowed",
+                LocalDate.now().minusDays(20),
+                LocalDate.now().plusDays(30),
+                new Period(LocalDate.now().minusDays(10), LocalDate.now().minusDays(3)),
+                "Camerino",
+                5,
+                3000.0,
+                organizer,
+                judge,
+                Set.of(mentor)
+        );
+        hackathonInEvaluation.registerTeam(team);
+        hackathonInEvaluation.toNextState(); // SUBSCRIPTION -> PROGRESS
+        hackathonInEvaluation.toNextState(); // PROGRESS -> EVALUATION
+        hackathonRepository.save(hackathonInEvaluation);
+
         System.out.println("[DataInitializer] Test data loaded successfully");
     }
 }
