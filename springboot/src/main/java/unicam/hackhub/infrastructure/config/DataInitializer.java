@@ -115,7 +115,7 @@ public class DataInitializer implements ApplicationRunner {
                 Set.of(mentor)
         );
 
-// Register TeamAlpha first, then advance state to PROGRESS
+        // Register TeamAlpha first, then advance state to PROGRESS
         hackathonInProgress.registerTeam(team);
         hackathonInProgress.toNextState();
         hackathonRepository.save(hackathonInProgress);

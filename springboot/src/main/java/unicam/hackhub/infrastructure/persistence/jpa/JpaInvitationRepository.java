@@ -12,5 +12,6 @@ import java.util.List;
  */
 @Repository
 public interface JpaInvitationRepository extends JpaRepository<Invitation, Long>, InvitationRepository {
+
     List<Invitation> findAllByTeam_Name(String teamName);
 }
