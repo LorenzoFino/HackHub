@@ -104,12 +104,20 @@ public class HackathonServiceImpl implements HackathonService {
 
     @Override
     public void addMentor(Long hackathonId, Long mentorId) {
-        Hackathon hackathon = findById(hackathonId);
+        Hackathon hackathon = hackathonRepository.findById(hackathonId)
+                .orElseThrow(() -> new IllegalArgumentException("Hackathon not found: " + hackathonId));
 
-        Mentor mentor = (Mentor) staffRepository.findById(mentorId)
+        Staff staff = staffRepository.findById(mentorId)
                 .orElseThrow(() -> new IllegalArgumentException("Mentor not found: " + mentorId));
 
-        hackathon.addMentor(mentor);
+        if (!(staff instanceof Mentor mentor))
+            throw new IllegalStateException("Staff member is not a Mentor");
+
+        // Check if mentor is already assigned
+        if (hackathon.getMentors().stream().anyMatch(m -> m.getId().equals(mentorId)))
+            throw new IllegalStateException("Mentor already assigned to this hackathon");
+
+        hackathon.getMentors().add(mentor);
         hackathonRepository.save(hackathon);
     }
 

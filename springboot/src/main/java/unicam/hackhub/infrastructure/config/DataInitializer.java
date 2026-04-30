@@ -81,7 +81,7 @@ public class DataInitializer implements ApplicationRunner {
         teamRepository.save(team2);
         userRepository.save(user2);
 
-        // Create hackathon in SUBSCRIPTION state
+        // Hackathon 1 — SUBSCRIPTION
         // Useful for testing: register team, unregister team
         Hackathon hackathon = new Hackathon(
                 "HackHub 2026",
@@ -102,29 +102,22 @@ public class DataInitializer implements ApplicationRunner {
         hackathon.registerTeam(team);
         hackathonRepository.save(hackathon);
 
-        // Create hackathon in PROGRESS state
+        // Hackathon 2 — PROGRESS
         Hackathon hackathonInProgress = new Hackathon(
                 "HackHub Progress 2026",
                 "A hackathon currently in progress",
                 "No cheating allowed",
-                LocalDate.now().minusDays(10),  // registrationOpenDate
-                LocalDate.now().plusDays(30),   // registrationDeadline — future
+                LocalDate.now().minusDays(10),
+                LocalDate.now().plusDays(30),
                 new Period(LocalDate.now().minusDays(5), LocalDate.now().minusDays(1)),
-                "Camerino",
-                5,
-                2000.0,
-                organizer,
-                judge,
-                Set.of(mentor)
+                "Camerino", 5, 2000.0, organizer, judge, Set.of(mentor)
         );
-
-        // Register TeamAlpha first, then advance state to PROGRESS
         hackathonInProgress.registerTeam(team);
-        // Force state to PROGRESS manually
-        hackathonInProgress.getStatus().setCurrentState(HackathonStatus.StateType.PROGRESS);
+        hackathonInProgress.changeState(HackathonStatus.StateType.PROGRESS);
         hackathonRepository.save(hackathonInProgress);
 
-        // Add test submission while in PROGRESS
+
+        // Add test submission while hackathon 2 is in PROGRESS
         Submission submission = new Submission(
                 "My Project",
                 "A great project",
@@ -135,11 +128,32 @@ public class DataInitializer implements ApplicationRunner {
         );
         submissionRepository.save(submission);
 
-        // Force state to EVALUATION manually
-        hackathonInProgress.getStatus().setCurrentState(HackathonStatus.StateType.EVALUATION);
-        hackathonRepository.save(hackathonInProgress);
+        // Hackathon 3 — EVALUATION
+        Hackathon hackathonInEvaluation = new Hackathon(
+                "HackHub Evaluation 2026",
+                "A hackathon in evaluation phase",
+                "No cheating allowed",
+                LocalDate.now().minusDays(20),
+                LocalDate.now().plusDays(30),
+                new Period(LocalDate.now().minusDays(7), LocalDate.now().minusDays(1)),
+                "Camerino", 5, 3000.0, organizer, judge, Set.of(mentor)
+        );
+        hackathonInEvaluation.registerTeam(team);
+        hackathonInEvaluation.changeState(HackathonStatus.StateType.EVALUATION);
+        hackathonRepository.save(hackathonInEvaluation);
 
-        // Create support request for main hackathon
+        // Add test submission for hackathon 3
+        Submission evalSubmission = new Submission(
+                "Evaluation Project",
+                "A project ready for evaluation",
+                "https://github.com/eval",
+                LocalDate.now().minusDays(2),
+                team,
+                hackathonInEvaluation
+        );
+        submissionRepository.save(evalSubmission);
+
+        // Create support request for hackathon 1
         SupportRequest supportRequest = new SupportRequest(
                 "Need help with the project structure",
                 LocalDate.now(),
@@ -163,27 +177,6 @@ public class DataInitializer implements ApplicationRunner {
                 hackathonInProgress
         );
         reportRepository.save(report);
-
-        // IT4 — Create hackathon in EVALUATION state
-        // Useful for testing: modifica valutazione, proclama vincitore, eroga premio
-        Hackathon hackathonInEvaluation = new Hackathon(
-                "HackHub Evaluation 2026",
-                "A hackathon in evaluation phase",
-                "No cheating allowed",
-                LocalDate.now().minusDays(20),
-                LocalDate.now().plusDays(30),
-                new Period(LocalDate.now().minusDays(10), LocalDate.now().minusDays(3)),
-                "Camerino",
-                5,
-                3000.0,
-                organizer,
-                judge,
-                Set.of(mentor)
-        );
-        hackathonInEvaluation.registerTeam(team);
-        hackathonInEvaluation.toNextState(); // SUBSCRIPTION -> PROGRESS
-        hackathonInEvaluation.toNextState(); // PROGRESS -> EVALUATION
-        hackathonRepository.save(hackathonInEvaluation);
 
         System.out.println("[DataInitializer] Test data loaded successfully");
     }

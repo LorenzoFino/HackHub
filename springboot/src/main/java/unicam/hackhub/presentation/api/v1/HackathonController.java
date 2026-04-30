@@ -4,10 +4,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import unicam.hackhub.application.hackathon.HackathonService;
-import unicam.hackhub.domain.model.Hackathon;
-import unicam.hackhub.domain.model.RoleAssignment;
+import unicam.hackhub.domain.model.*;
+import unicam.hackhub.domain.repository.StaffRepository;
+import unicam.hackhub.domain.utils.Period;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 /**
  * REST controller for hackathon management.
@@ -18,9 +21,11 @@ import java.util.List;
 public class HackathonController {
 
     private final HackathonService hackathonService;
+    private final StaffRepository staffRepository;
 
-    public HackathonController(HackathonService hackathonService) {
+    public HackathonController(HackathonService hackathonService, StaffRepository staffRepository) {
         this.hackathonService = hackathonService;
+        this.staffRepository = staffRepository;
     }
 
     /** GET /api/v1/hackathons — returns all hackathons */
@@ -37,7 +42,35 @@ public class HackathonController {
 
     /** POST /api/v1/hackathons — creates a new hackathon */
     @PostMapping
-    public ResponseEntity<Hackathon> create(@RequestBody Hackathon hackathon) {
+    public ResponseEntity<Hackathon> create(@RequestParam String name,
+                                            @RequestParam String description,
+                                            @RequestParam String rules,
+                                            @RequestParam LocalDate registrationOpenDate,
+                                            @RequestParam LocalDate registrationDeadline,
+                                            @RequestParam LocalDate startDate,
+                                            @RequestParam LocalDate endDate,
+                                            @RequestParam String location,
+                                            @RequestParam Integer maxTeamSize,
+                                            @RequestParam Double prize,
+                                            @RequestParam Long organizerId,
+                                            @RequestParam Long judgeId,
+                                            @RequestParam Long mentorId) {
+
+        Organizer organizer = (Organizer) staffRepository.findById(organizerId)
+                .orElseThrow(() -> new IllegalArgumentException("Organizer not found"));
+        Judge judge = (Judge) staffRepository.findById(judgeId)
+                .orElseThrow(() -> new IllegalArgumentException("Judge not found"));
+        Mentor mentor = (Mentor) staffRepository.findById(mentorId)
+                .orElseThrow(() -> new IllegalArgumentException("Mentor not found"));
+
+        Hackathon hackathon = new Hackathon(
+                name, description, rules,
+                registrationOpenDate, registrationDeadline,
+                new Period(startDate, endDate),
+                location, maxTeamSize, prize,
+                organizer, judge, Set.of(mentor)
+        );
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(hackathonService.createHackathon(hackathon));
     }

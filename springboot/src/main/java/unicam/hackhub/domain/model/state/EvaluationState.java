@@ -37,6 +37,8 @@ public class EvaluationState extends AbstractHackathonState {
 
     @Override
     public void toNextState() {
-        hackathon.changeState(hackathon.getStatus().getNextState());
+        // Evaluation state can only end when the organizer declares a winner
+        // via declareWinner() — the scheduler cannot advance this state automatically
     }
+
 }

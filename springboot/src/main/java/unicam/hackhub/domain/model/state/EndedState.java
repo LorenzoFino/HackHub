@@ -14,4 +14,9 @@ public class EndedState extends AbstractHackathonState {
     public EndedState(Hackathon hackathon) {
         super(hackathon);
     }
+
+    @Override
+    public void toNextState() {
+        // Final state — no further transitions possible
+    }
 }
