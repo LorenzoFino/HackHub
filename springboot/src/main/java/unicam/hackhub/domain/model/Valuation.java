@@ -26,7 +26,7 @@ public class Valuation {
     private Long id;
 
     @Column(nullable = false)
-    private int vote;
+    private Integer vote;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String judgement;
@@ -44,7 +44,7 @@ public class Valuation {
     @JoinColumn(name = "judge_id", nullable = false)
     private Judge judge;
 
-    public Valuation(int vote, String judgement, LocalDate date,
+    public Valuation(Integer vote, String judgement, LocalDate date,
                      Submission submission, Judge judge) {
         this.vote = vote;
         this.judgement = judgement;

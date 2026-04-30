@@ -32,7 +32,7 @@ public class MentorCall {
     private LocalDate date;
 
     @Column(nullable = false)
-    private int duration;
+    private Integer duration;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -43,7 +43,7 @@ public class MentorCall {
     @JoinColumn(name = "support_request_id", nullable = false)
     private SupportRequest supportRequest;
 
-    public MentorCall(String link, LocalDate date, int duration, SupportRequest supportRequest) {
+    public MentorCall(String link, LocalDate date, Integer duration, SupportRequest supportRequest) {
         this.link = link;
         this.date = date;
         this.duration = duration;

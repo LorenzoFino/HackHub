@@ -41,7 +41,7 @@ public class Team {
     @Setter
     @Getter
     @Column(nullable = false)
-    private int numMembers;
+    private Integer numMembers;
 
     public Team() {}
 
