@@ -14,6 +14,12 @@ public interface HackathonService {
     /** Creates a new hackathon — only an Organizer can do this */
     Hackathon createHackathon(Hackathon hackathon);
 
+    /** Updates an existing hackathon — only allowed during SUBSCRIPTION */
+    Hackathon updateHackathon(Long hackathonId, Hackathon updatedHackathon);
+
+    /** Deletes an existing hackathon — only allowed during SUBSCRIPTION */
+    void deleteHackathon(Long hackathonId);
+
     /** Adds a mentor to an existing hackathon */
     void addMentor(Long hackathonId, Long mentorId);
 
