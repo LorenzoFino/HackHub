@@ -18,4 +18,6 @@ public interface SupportRequestRepository {
     List<SupportRequest> findAllByHackathonId(Long hackathonId);
 
     List<SupportRequest> findAllByTeamName(String teamName);
+
+    void deleteAllByHackathonId(Long hackathonId);
 }

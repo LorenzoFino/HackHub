@@ -5,6 +5,7 @@ import unicam.hackhub.domain.model.*;
 import unicam.hackhub.domain.repository.HackathonRepository;
 import unicam.hackhub.domain.repository.RoleAssignmentRepository;
 import unicam.hackhub.domain.repository.StaffRepository;
+import unicam.hackhub.domain.repository.SupportRequestRepository;
 import unicam.hackhub.infrastructure.services.email.MockEmailAdapter;
 import unicam.hackhub.infrastructure.services.payment.MockPaymentAdapter;
 
@@ -22,17 +23,20 @@ public class HackathonServiceImpl implements HackathonService {
     private final HackathonRepository hackathonRepository;
     private final StaffRepository staffRepository;
     private final RoleAssignmentRepository roleAssignmentRepository;
+    private final SupportRequestRepository supportRequestRepository;
     private final MockPaymentAdapter paymentAdapter;
     private final MockEmailAdapter emailAdapter;
 
     public HackathonServiceImpl(HackathonRepository hackathonRepository,
                                 StaffRepository staffRepository,
                                 RoleAssignmentRepository roleAssignmentRepository,
+                                SupportRequestRepository supportRequestRepository,
                                 MockPaymentAdapter paymentAdapter,
                                 MockEmailAdapter emailAdapter) {
         this.hackathonRepository = hackathonRepository;
         this.staffRepository = staffRepository;
         this.roleAssignmentRepository = roleAssignmentRepository;
+        this.supportRequestRepository = supportRequestRepository;
         this.paymentAdapter = paymentAdapter;
         this.emailAdapter = emailAdapter;
     }
@@ -81,6 +85,9 @@ public class HackathonServiceImpl implements HackathonService {
 
         // Save registered teams before deletion for notification
         Set<Team> registeredTeams = new HashSet<>(hackathon.getRegisteredTeams());
+
+        // Delete all support requests for this hackathon
+        supportRequestRepository.deleteAllByHackathonId(hackathonId);
 
         // Unregister all teams
         hackathon.getRegisteredTeams().clear();
