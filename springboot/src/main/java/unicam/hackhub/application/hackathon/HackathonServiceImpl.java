@@ -1,6 +1,7 @@
 package unicam.hackhub.application.hackathon;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import unicam.hackhub.domain.model.*;
 import unicam.hackhub.domain.repository.HackathonRepository;
 import unicam.hackhub.domain.repository.RoleAssignmentRepository;
@@ -76,6 +77,7 @@ public class HackathonServiceImpl implements HackathonService {
         return saved;
     }
 
+    @Transactional
     @Override
     public void deleteHackathon(Long hackathonId) {
         Hackathon hackathon = findById(hackathonId);
