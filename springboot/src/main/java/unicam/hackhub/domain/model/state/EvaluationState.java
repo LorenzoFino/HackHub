@@ -15,13 +15,13 @@ public class EvaluationState extends AbstractHackathonState {
     }
 
     @Override
-    public void valuateSubmission(String teamName, int vote, String judgement) {
+    public void valuateSubmission(String teamName, Integer vote, String judgement) {
         if (vote < 0 || vote > 10)
             throw new IllegalArgumentException("Vote must be between 0 and 10");
     }
 
     @Override
-    public void updateValuation(String teamName, int vote, String judgement) {
+    public void updateValuation(String teamName, Integer vote, String judgement) {
         if (vote < 0 || vote > 10)
             throw new IllegalArgumentException("Vote must be between 0 and 10");
     }

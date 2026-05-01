@@ -33,12 +33,12 @@ public abstract class AbstractHackathonState implements HackathonState {
     }
 
     @Override
-    public void valuateSubmission(String teamName, int vote, String judgement) {
+    public void valuateSubmission(String teamName, Integer vote, String judgement) {
         throw new IllegalStateException("Cannot valuate a submission in this state");
     }
 
     @Override
-    public void updateValuation(String teamName, int vote, String judgement) {
+    public void updateValuation(String teamName, Integer vote, String judgement) {
         throw new IllegalStateException("Cannot update a valuation in this state");
     }
 

@@ -20,10 +20,10 @@ public interface HackathonState {
     void updateSubmission(Team team, Submission sottomissione);
 
     /** Judge evaluates a team's submission (only in EVALUATION) */
-    void valuateSubmission(String nomeTeam, int voto, String giudizio);
+    void valuateSubmission(String nomeTeam, Integer voto, String giudizio);
 
     /** Judge updates an existing valuation (only in EVALUATION) */
-    void updateValuation(String nomeTeam, int voto, String giudizio);
+    void updateValuation(String nomeTeam, Integer voto, String giudizio);
 
     /** Organizer declares the winning team (only in EVALUATION) */
     void declareWinner(String nomeTeam);

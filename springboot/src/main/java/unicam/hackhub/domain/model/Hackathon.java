@@ -166,7 +166,7 @@ public class Hackathon implements HackathonObservable {
         return registeredTeams.contains(team);
     }
 
-    public int getRegisteredTeamCount() {
+    public Integer getRegisteredTeamCount() {
         return registeredTeams.size();
     }
 
@@ -193,11 +193,11 @@ public class Hackathon implements HackathonObservable {
     // Valuation methods
     // =====================================
 
-    public void valuateSubmission(String teamName, int vote, String judgement) {
+    public void valuateSubmission(String teamName, Integer vote, String judgement) {
         this.state.valuateSubmission(teamName, vote, judgement);
     }
 
-    public void updateValuation(String teamName, int vote, String judgement) {
+    public void updateValuation(String teamName, Integer vote, String judgement) {
         this.state.updateValuation(teamName, vote, judgement);
     }
 

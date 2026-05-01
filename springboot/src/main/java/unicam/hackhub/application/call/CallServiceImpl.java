@@ -30,7 +30,7 @@ public class CallServiceImpl implements CallService {
     }
 
     @Override
-    public MentorCall proposeCall(Long supportRequestId, LocalDate date, int duration) {
+    public MentorCall proposeCall(Long supportRequestId, LocalDate date, Integer duration) {
         SupportRequest supportRequest = supportRequestRepository.findById(supportRequestId)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Support request not found: " + supportRequestId));

@@ -39,7 +39,7 @@ public class CallController {
     @PostMapping
     public ResponseEntity<MentorCall> propose(@RequestParam Long supportRequestId,
                                               @RequestParam LocalDate date,
-                                              @RequestParam int duration) {
+                                              @RequestParam Integer duration) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(callService.proposeCall(supportRequestId, date, duration));
     }

@@ -13,7 +13,7 @@ import java.util.List;
 public interface CallService {
 
     /** Proposes a call to a team in response to a support request */
-    MentorCall proposeCall(Long supportRequestId, LocalDate date, int duration);
+    MentorCall proposeCall(Long supportRequestId, LocalDate date, Integer duration);
 
     /** Cancels an existing call */
     void cancelCall(Long callId);
