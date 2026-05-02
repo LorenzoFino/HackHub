@@ -7,6 +7,7 @@ import unicam.hackhub.domain.model.Team;
 import unicam.hackhub.domain.repository.HackathonRepository;
 import unicam.hackhub.domain.repository.SupportRequestRepository;
 import unicam.hackhub.domain.repository.TeamRepository;
+import unicam.hackhub.domain.exception.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -33,11 +34,11 @@ public class SupportRequestServiceImpl implements SupportRequestService {
     @Override
     public SupportRequest sendSupportRequest(SupportRequest supportRequest) {
         Team team = teamRepository.findById(supportRequest.getTeam().getName())
-                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+                .orElseThrow(() -> new TeamNotFoundException(supportRequest.getTeam().getName()));
 
         Hackathon hackathon = hackathonRepository
                 .findById(supportRequest.getHackathon().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Hackathon not found"));
+                .orElseThrow(() -> new HackathonNotFoundException(supportRequest.getHackathon().getId()));
 
         if (!hackathon.hasTeam(team))
             throw new IllegalStateException("Team is not registered to this hackathon");
@@ -76,6 +77,6 @@ public class SupportRequestServiceImpl implements SupportRequestService {
     @Override
     public SupportRequest findById(Long id) {
         return supportRequestRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Support request not found: " + id));
+                .orElseThrow(() -> new SupportRequestNotFoundException(id));
     }
 }

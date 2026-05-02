@@ -6,6 +6,7 @@ import unicam.hackhub.domain.repository.HackathonRepository;
 import unicam.hackhub.domain.repository.ReportRepository;
 import unicam.hackhub.domain.repository.StaffRepository;
 import unicam.hackhub.domain.repository.TeamRepository;
+import unicam.hackhub.domain.exception.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -36,14 +37,16 @@ public class ReportServiceImpl implements ReportService {
         Hackathon hackathon = findHackathon(hackathonId);
 
         if (hackathon.getCurrentState() != HackathonStatus.StateType.PROGRESS)
-            throw new IllegalStateException("Reports can only be filed during the PROGRESS state");
+            throw new InvalidHackathonStateException("Reports can only be filed during the PROGRESS state");
 
-        Staff staff = staffRepository.findByEmail(mentorEmail).orElseThrow(() -> new IllegalArgumentException("Mentor not found: " + mentorEmail));
+        Staff staff = staffRepository.findByEmail(mentorEmail)
+                .orElseThrow(() -> new StaffNotFoundException(mentorEmail));
 
         if (!(staff instanceof Mentor mentor))
             throw new IllegalStateException("Staff member is not a Mentor: " + mentorEmail);
 
-        Team team = teamRepository.findById(teamName).orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamName));
+        Team team = teamRepository.findById(teamName)
+                .orElseThrow(() -> new TeamNotFoundException(teamName));
 
         if (!hackathon.hasTeam(team))
             throw new IllegalStateException("Team is not registered to this hackathon");
@@ -54,12 +57,13 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public void manageViolation(Long reportId, String status, boolean excludeTeam, Long hackathonId) {
-        Report report = reportRepository.findById(reportId).orElseThrow(() -> new IllegalArgumentException("Report not found: " + reportId));
+        Report report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new ReportNotFoundException(reportId));
 
         Hackathon hackathon = findHackathon(hackathonId);
 
         if (hackathon.getCurrentState() != HackathonStatus.StateType.PROGRESS)
-            throw new IllegalStateException("Violation can only be managed during the PROGRESS state");
+            throw new InvalidHackathonStateException("Violation can only be managed during the PROGRESS state");
 
         Report.ReportStatus newStatus;
         try {
@@ -85,6 +89,6 @@ public class ReportServiceImpl implements ReportService {
 
     private Hackathon findHackathon(Long hackathonId) {
         return hackathonRepository.findById(hackathonId)
-                .orElseThrow(() -> new IllegalArgumentException("Hackathon not found: " + hackathonId));
+                .orElseThrow(() -> new HackathonNotFoundException(hackathonId));
     }
 }

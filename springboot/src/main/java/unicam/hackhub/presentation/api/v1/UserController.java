@@ -1,19 +1,16 @@
 package unicam.hackhub.presentation.api.v1;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import unicam.hackhub.application.dto.command.CreateSubmissionCommand;
+import unicam.hackhub.application.dto.response.SubmissionResult;
 import unicam.hackhub.application.submission.SubmissionService;
-import unicam.hackhub.domain.model.Hackathon;
-import unicam.hackhub.domain.model.Submission;
-import unicam.hackhub.domain.model.Team;
+import unicam.hackhub.presentation.dto.request.CreateSubmissionRequest;
 
 import java.util.List;
 
-/**
- * REST controller for submission management.
- * Covers the Team Member use cases from the sequence diagrams.
- */
 @RestController
 @RequestMapping("/api/v1/submissions")
 public class UserController {
@@ -24,48 +21,34 @@ public class UserController {
         this.submissionService = submissionService;
     }
 
-    /** GET /api/v1/submissions/hackathon/{hackathonId} — returns all submissions for a hackathon */
     @GetMapping("/hackathon/{hackathonId}")
-    public ResponseEntity<List<Submission>> getAllByHackathon(@PathVariable Long hackathonId) {
+    public ResponseEntity<List<SubmissionResult>> getAllByHackathon(@PathVariable Long hackathonId) {
         return ResponseEntity.ok(submissionService.findAllByHackathon(hackathonId));
     }
 
-    /** GET /api/v1/submissions/hackathon/{hackathonId}/team/{teamName} — returns a team submission */
     @GetMapping("/hackathon/{hackathonId}/team/{teamName}")
-    public ResponseEntity<Submission> getByTeamAndHackathon(@PathVariable Long hackathonId,
-                                                            @PathVariable String teamName) {
+    public ResponseEntity<SubmissionResult> getByTeamAndHackathon(@PathVariable Long hackathonId,
+                                                                  @PathVariable String teamName) {
         return ResponseEntity.ok(submissionService.findByTeamAndHackathon(teamName, hackathonId));
     }
 
-    /** POST /api/v1/submissions — sends a new submission */
     @PostMapping
-    public ResponseEntity<Submission> send(@RequestParam String teamName,
-                                           @RequestParam Long hackathonId,
-                                           @RequestParam String title,
-                                           @RequestParam String description,
-                                           @RequestParam String link) {
-        Submission submission = new Submission();
-        submission.setTitle(title);
-        submission.setDescription(description);
-        submission.setLink(link);
-        submission.setSubmissionDate(java.time.LocalDate.now());
-
-        Team team = new Team();
-        team.setName(teamName);
-        submission.setTeam(team);
-
-        Hackathon hackathon = new Hackathon();
-        hackathon.setId(hackathonId);
-        submission.setHackathon(hackathon);
-
+    public ResponseEntity<SubmissionResult> send(@Valid @RequestBody CreateSubmissionRequest request) {
+        CreateSubmissionCommand command = new CreateSubmissionCommand(
+                request.title(), request.description(), request.link(),
+                request.teamName(), request.hackathonId()
+        );
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(submissionService.sendSubmission(submission));
+                .body(submissionService.sendSubmission(command));
     }
 
-    /** PUT /api/v1/submissions/{id} — updates an existing submission */
     @PutMapping("/{id}")
-    public ResponseEntity<Submission> update(@PathVariable Long id,
-                                             @RequestBody Submission submission) {
-        return ResponseEntity.ok(submissionService.updateSubmission(id, submission));
+    public ResponseEntity<SubmissionResult> update(@PathVariable Long id,
+                                                   @Valid @RequestBody CreateSubmissionRequest request) {
+        CreateSubmissionCommand command = new CreateSubmissionCommand(
+                request.title(), request.description(), request.link(),
+                request.teamName(), request.hackathonId()
+        );
+        return ResponseEntity.ok(submissionService.updateSubmission(id, command));
     }
 }

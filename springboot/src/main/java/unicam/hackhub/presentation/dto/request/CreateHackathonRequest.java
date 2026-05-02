@@ -1,0 +1,20 @@
+package unicam.hackhub.presentation.dto.request;
+
+import jakarta.validation.constraints.*;
+import java.time.LocalDate;
+
+public record CreateHackathonRequest(
+        @NotBlank String name,
+        @NotBlank String description,
+        @NotBlank String rules,
+        @NotNull LocalDate registrationOpenDate,
+        @NotNull LocalDate registrationDeadline,
+        @NotNull LocalDate startDate,
+        @NotNull LocalDate endDate,
+        @NotBlank String location,
+        @Min(1) @Max(20) int maxTeamSize,
+        @PositiveOrZero double prize,
+        @NotNull Long organizerId,
+        @NotNull Long judgeId,
+        @NotNull Long mentorId
+) {}

@@ -6,6 +6,7 @@ import unicam.hackhub.domain.model.SupportRequest;
 import unicam.hackhub.domain.repository.CallRepository;
 import unicam.hackhub.domain.repository.SupportRequestRepository;
 import unicam.hackhub.infrastructure.services.calendar.MockCalendarAdapter;
+import unicam.hackhub.domain.exception.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,8 +33,7 @@ public class CallServiceImpl implements CallService {
     @Override
     public MentorCall proposeCall(Long supportRequestId, LocalDate date, Integer duration) {
         SupportRequest supportRequest = supportRequestRepository.findById(supportRequestId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Support request not found: " + supportRequestId));
+                .orElseThrow(() -> new SupportRequestNotFoundException(supportRequestId));
 
         if (supportRequest.getStatus() != SupportRequest.RequestStatus.PENDING)
             throw new IllegalStateException("Support request is not pending");
@@ -72,7 +72,7 @@ public class CallServiceImpl implements CallService {
     @Override
     public MentorCall findById(Long callId) {
         return callRepository.findById(callId)
-                .orElseThrow(() -> new IllegalArgumentException("Call not found: " + callId));
+                .orElseThrow(() -> new CallNotFoundException(callId));
     }
 
     @Override

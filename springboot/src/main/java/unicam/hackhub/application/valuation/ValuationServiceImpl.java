@@ -1,80 +1,90 @@
 package unicam.hackhub.application.valuation;
 
 import org.springframework.stereotype.Service;
-import unicam.hackhub.domain.model.Hackathon;
-import unicam.hackhub.domain.model.Submission;
-import unicam.hackhub.domain.model.Valuation;
-import unicam.hackhub.domain.repository.HackathonRepository;
-import unicam.hackhub.domain.repository.SubmissionRepository;
-import unicam.hackhub.domain.repository.ValuationRepository;
+import unicam.hackhub.application.dto.command.CreateValuationCommand;
+import unicam.hackhub.application.dto.command.UpdateValuationCommand;
+import unicam.hackhub.application.dto.mapper.ValuationResultMapper;
+import unicam.hackhub.application.dto.response.ValuationResult;
+import unicam.hackhub.domain.exception.*;
+import unicam.hackhub.domain.model.*;
+import unicam.hackhub.domain.repository.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Implementation of ValuationService.
- * Orchestrates domain objects and repositories.
- */
 @Service
 public class ValuationServiceImpl implements ValuationService {
 
     private final ValuationRepository valuationRepository;
     private final HackathonRepository hackathonRepository;
     private final SubmissionRepository submissionRepository;
+    private final StaffRepository staffRepository;
+    private final ValuationResultMapper mapper;
 
     public ValuationServiceImpl(ValuationRepository valuationRepository,
                                 HackathonRepository hackathonRepository,
-                                SubmissionRepository submissionRepository) {
+                                SubmissionRepository submissionRepository,
+                                StaffRepository staffRepository,
+                                ValuationResultMapper mapper) {
         this.valuationRepository = valuationRepository;
         this.hackathonRepository = hackathonRepository;
         this.submissionRepository = submissionRepository;
+        this.staffRepository = staffRepository;
+        this.mapper = mapper;
     }
 
     @Override
-    public Valuation releaseValuation(Valuation valuation) {
-        // Load full submission from DB
-        Submission submission = submissionRepository.findById(valuation.getSubmission().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Submission not found"));
+    public ValuationResult releaseValuation(CreateValuationCommand command) {
+        Submission submission = submissionRepository.findById(command.submissionId())
+                .orElseThrow(() -> new SubmissionNotFoundException(command.submissionId()));
 
         Hackathon hackathon = hackathonRepository.findById(submission.getHackathon().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Hackathon not found"));
+                .orElseThrow(() -> new HackathonNotFoundException(submission.getHackathon().getId()));
+
+        Judge judge = (Judge) staffRepository.findById(command.judgeId())
+                .orElseThrow(() -> new StaffNotFoundException(command.judgeId()));
 
         hackathon.valuateSubmission(
                 submission.getTeam().getName(),
-                valuation.getVote(),
-                valuation.getJudgement()
+                command.vote(),
+                command.judgement()
         );
 
-        valuation.setSubmission(submission);
-        valuation.setDate(java.time.LocalDate.now());
+        Valuation valuation = new Valuation(
+                command.vote(), command.judgement(),
+                LocalDate.now(), submission, judge
+        );
 
         hackathonRepository.save(hackathon);
-        return valuationRepository.save(valuation);
+        return mapper.toResult(valuationRepository.save(valuation));
     }
 
     @Override
-    public Valuation updateValuation(Long valuationId, Valuation updatedValuation) {
+    public ValuationResult updateValuation(Long valuationId, UpdateValuationCommand command) {
         Valuation existing = valuationRepository.findById(valuationId)
-                .orElseThrow(() -> new IllegalArgumentException("Valuation not found: " + valuationId));
+                .orElseThrow(() -> new ValuationNotFoundException(valuationId));
 
         Hackathon hackathon = hackathonRepository
                 .findById(existing.getSubmission().getHackathon().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Hackathon not found"));
+                .orElseThrow(() -> new HackathonNotFoundException(
+                        existing.getSubmission().getHackathon().getId()));
 
         hackathon.updateValuation(
                 existing.getSubmission().getTeam().getName(),
-                updatedValuation.getVote(),
-                updatedValuation.getJudgement()
+                command.vote(),
+                command.judgement()
         );
 
-        existing.setVote(updatedValuation.getVote());
-        existing.setJudgement(updatedValuation.getJudgement());
+        existing.setVote(command.vote());
+        existing.setJudgement(command.judgement());
 
         hackathonRepository.save(hackathon);
-        return valuationRepository.save(existing);
+        return mapper.toResult(valuationRepository.save(existing));
     }
 
     @Override
-    public List<Valuation> findAllByHackathon(Long hackathonId) {
-        return valuationRepository.findAllBySubmissionHackathonId(hackathonId);
+    public List<ValuationResult> findAllByHackathon(Long hackathonId) {
+        return valuationRepository.findAllBySubmissionHackathonId(hackathonId)
+                .stream().map(mapper::toResult).toList();
     }
 }

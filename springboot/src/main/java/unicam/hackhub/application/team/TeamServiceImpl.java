@@ -6,6 +6,7 @@ import unicam.hackhub.domain.repository.HackathonRepository;
 import unicam.hackhub.domain.repository.InvitationRepository;
 import unicam.hackhub.domain.repository.TeamRepository;
 import unicam.hackhub.domain.repository.UserRepository;
+import unicam.hackhub.domain.exception.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -38,10 +39,10 @@ public class TeamServiceImpl implements TeamService {
             throw new IllegalArgumentException("Team name already taken: " + teamName);
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+                .orElseThrow(() -> new UserNotFoundException(userEmail));
 
         if (user.hasTeam())
-            throw new IllegalStateException("User already belongs to a team");
+            throw new UserAlreadyInTeamException(userEmail);
 
         Team team = new Team(teamName, user);
         user.setTeam(team);
@@ -60,10 +61,10 @@ public class TeamServiceImpl implements TeamService {
             throw new IllegalStateException("Cannot invite members while the team is registered in a hackathon");
 
         User recipient = userRepository.findByEmail(recipientEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + recipientEmail));
+                .orElseThrow(() -> new UserNotFoundException(recipientEmail));
 
         if (recipient.hasTeam())
-            throw new IllegalStateException("User already belongs to a team");
+            throw new UserAlreadyInTeamException(recipientEmail);
 
         Invitation invitation = new Invitation(recipient, team, LocalDate.now());
         return invitationRepository.save(invitation);
@@ -72,7 +73,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public void acceptInvitation(Long invitationId) {
         Invitation invitation = invitationRepository.findById(invitationId)
-                .orElseThrow(() -> new IllegalArgumentException("Invitation not found: " + invitationId));
+                .orElseThrow(() -> new InvitationNotFoundException(invitationId));
 
         if (invitation.getStatus() != Invitation.InvitationStatus.PENDING)
             throw new IllegalStateException("Invitation is no longer pending");
@@ -80,7 +81,7 @@ public class TeamServiceImpl implements TeamService {
         User recipient = invitation.getRecipient();
 
         if (recipient.hasTeam())
-            throw new IllegalStateException("User already belongs to a team");
+            throw new UserAlreadyInTeamException(recipient.getEmail());
 
         Team team = invitation.getTeam();
 
@@ -96,7 +97,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public void declineInvitation(Long invitationId) {
         Invitation invitation = invitationRepository.findById(invitationId)
-                .orElseThrow(() -> new IllegalArgumentException("Invitation not found: " + invitationId));
+                .orElseThrow(() -> new InvitationNotFoundException(invitationId));
 
         invitation.setStatus(Invitation.InvitationStatus.DECLINED);
         invitationRepository.save(invitation);
@@ -113,7 +114,7 @@ public class TeamServiceImpl implements TeamService {
             throw new IllegalStateException("The creator cannot leave the team; use deleteTeam instead");
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+                .orElseThrow(() -> new UserNotFoundException(userEmail));
 
         if (!team.getMembers().contains(user))
             throw new IllegalArgumentException("User is not a member of this team");
@@ -157,10 +158,10 @@ public class TeamServiceImpl implements TeamService {
         Team team = findByName(teamName);
 
         Hackathon hackathon = hackathonRepository.findById(hackathonId)
-                .orElseThrow(() -> new IllegalArgumentException("Hackathon not found: " + hackathonId));
+                .orElseThrow(() -> new HackathonNotFoundException(hackathonId));
 
         if (hackathon.getCurrentState() != HackathonStatus.StateType.SUBSCRIPTION)
-            throw new IllegalStateException("Teams can only unregister during the SUBSCRIPTION state");
+            throw new InvalidHackathonStateException("Teams can only unregister during the SUBSCRIPTION state");
 
         hackathon.unregisterTeam(team);
         hackathonRepository.save(hackathon);
@@ -169,6 +170,6 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public Team findByName(String teamName) {
         return teamRepository.findById(teamName)
-                .orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamName));
+                .orElseThrow(() -> new TeamNotFoundException(teamName));
     }
 }
