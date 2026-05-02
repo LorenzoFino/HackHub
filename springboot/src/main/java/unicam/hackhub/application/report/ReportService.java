@@ -1,42 +1,36 @@
 package unicam.hackhub.application.report;
 
-import unicam.hackhub.domain.model.Report;
-
+import unicam.hackhub.application.dto.command.CreateReportCommand;
+import unicam.hackhub.application.dto.response.ReportResult;
 import java.util.List;
 
-/**
- * Application service for violation report management.
- * Covers the Mentor and Organizer use cases related to team violations.
- */
 public interface ReportService {
+
     /**
-     * Mentor reports a team for a rule violation
-     * Only allowed when the hackathon is in PROGRESS state
+     * Mentor files a violation report for a team.
+     * Only allowed when the hackathon is in PROGRESS state.
      *
-     * @param mentorEmail email of the mentor filing the report
-     * @param teamName name of the team being reported
-     * @param hackathonId id of the Hackathon
-     * @param description description of the violation
-     * @return the created Report
+     * @param command contains mentorEmail, teamName, hackathonId, description
+     * @return the created ReportResult DTO
      */
-    Report reportTeam(String mentorEmail, String teamName, Long hackathonId, String description);
+    ReportResult reportTeam(CreateReportCommand command);
 
     /**
      * Organizer manages a violation report, optionally excluding the team.
      * Only allowed when the hackathon is in PROGRESS state.
      *
-     * @param reportId id of the report to manage
-     * @param status new status for the report (REVIEWED or CLOSED)
+     * @param reportId    id of the report to manage
+     * @param status      new status (REVIEWED or CLOSED)
      * @param excludeTeam if true, the team is unregistered from the hackathon
-     * @param hackathonId id of the hackathon (used when excluding the team)
+     * @param hackathonId id of the hackathon
      */
     void manageViolation(Long reportId, String status, boolean excludeTeam, Long hackathonId);
 
     /**
-     * Returns all reports for a given hackathon
+     * Returns all reports for a given hackathon.
      *
      * @param hackathonId id of the hackathon
-     * @return list of reports
+     * @return list of ReportResult DTOs
      */
-    List<Report> findAllByHackathon(Long hackathonId);
+    List<ReportResult> findAllByHackathon(Long hackathonId);
 }

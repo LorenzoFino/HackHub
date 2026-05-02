@@ -12,6 +12,10 @@ import unicam.hackhub.domain.repository.*;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Implementation of ValuationService.
+ * Orchestrates domain objects, repositories and exception handling.
+ */
 @Service
 public class ValuationServiceImpl implements ValuationService {
 
@@ -44,6 +48,7 @@ public class ValuationServiceImpl implements ValuationService {
         Judge judge = (Judge) staffRepository.findById(command.judgeId())
                 .orElseThrow(() -> new StaffNotFoundException(command.judgeId()));
 
+        // Delegate validation and state check to domain model
         hackathon.valuateSubmission(
                 submission.getTeam().getName(),
                 command.vote(),
@@ -69,6 +74,7 @@ public class ValuationServiceImpl implements ValuationService {
                 .orElseThrow(() -> new HackathonNotFoundException(
                         existing.getSubmission().getHackathon().getId()));
 
+        // Delegate validation and state check to domain model
         hackathon.updateValuation(
                 existing.getSubmission().getTeam().getName(),
                 command.vote(),

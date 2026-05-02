@@ -4,10 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import unicam.hackhub.application.call.CallService;
-import unicam.hackhub.domain.model.MentorCall;
+import unicam.hackhub.presentation.dto.response.SupportRequestResponse;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * REST controller for mentor call management.
@@ -23,23 +22,11 @@ public class CallController {
         this.callService = callService;
     }
 
-    /** GET /api/v1/calls/{id} — returns a call by id */
-    @GetMapping("/{id}")
-    public ResponseEntity<MentorCall> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(callService.findById(id));
-    }
-
-    /** GET /api/v1/calls/support-request/{id} — returns all calls for a support request */
-    @GetMapping("/support-request/{id}")
-    public ResponseEntity<List<MentorCall>> getAllBySupportRequest(@PathVariable Long id) {
-        return ResponseEntity.ok(callService.findAllBySupportRequest(id));
-    }
-
-    /** POST /api/v1/calls — proposes a new call */
+    /** POST /api/v1/calls — proposes a new call to a team */
     @PostMapping
-    public ResponseEntity<MentorCall> propose(@RequestParam Long supportRequestId,
-                                              @RequestParam LocalDate date,
-                                              @RequestParam Integer duration) {
+    public ResponseEntity<SupportRequestResponse> propose(@RequestParam Long supportRequestId,
+                                                          @RequestParam LocalDate date,
+                                                          @RequestParam Integer duration) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(callService.proposeCall(supportRequestId, date, duration));
     }

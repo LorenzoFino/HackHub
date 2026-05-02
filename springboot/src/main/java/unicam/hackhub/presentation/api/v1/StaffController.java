@@ -13,6 +13,10 @@ import unicam.hackhub.presentation.dto.request.UpdateValuationRequest;
 
 import java.util.List;
 
+/**
+ * REST controller for valuation management.
+ * Covers the Judge use cases from the sequence diagrams.
+ */
 @RestController
 @RequestMapping("/api/v1/valuations")
 public class StaffController {
@@ -23,11 +27,13 @@ public class StaffController {
         this.valuationService = valuationService;
     }
 
+    /** GET /api/v1/valuations/hackathon/{hackathonId} — returns all valuations for a hackathon */
     @GetMapping("/hackathon/{hackathonId}")
     public ResponseEntity<List<ValuationResult>> getAllByHackathon(@PathVariable Long hackathonId) {
         return ResponseEntity.ok(valuationService.findAllByHackathon(hackathonId));
     }
 
+    /** POST /api/v1/valuations — judge releases a new valuation */
     @PostMapping
     public ResponseEntity<ValuationResult> release(@Valid @RequestBody CreateValuationRequest request) {
         CreateValuationCommand command = new CreateValuationCommand(
@@ -38,6 +44,7 @@ public class StaffController {
                 .body(valuationService.releaseValuation(command));
     }
 
+    /** PUT /api/v1/valuations/{id} — judge updates an existing valuation */
     @PutMapping("/{id}")
     public ResponseEntity<ValuationResult> update(@PathVariable Long id,
                                                   @Valid @RequestBody UpdateValuationRequest request) {

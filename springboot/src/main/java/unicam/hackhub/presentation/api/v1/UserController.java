@@ -11,6 +11,10 @@ import unicam.hackhub.presentation.dto.request.CreateSubmissionRequest;
 
 import java.util.List;
 
+/**
+ * REST controller for submission management.
+ * Covers the Team Member use cases from the sequence diagrams.
+ */
 @RestController
 @RequestMapping("/api/v1/submissions")
 public class UserController {
@@ -21,17 +25,20 @@ public class UserController {
         this.submissionService = submissionService;
     }
 
+    /** GET /api/v1/submissions/hackathon/{hackathonId} — returns all submissions for a hackathon */
     @GetMapping("/hackathon/{hackathonId}")
     public ResponseEntity<List<SubmissionResult>> getAllByHackathon(@PathVariable Long hackathonId) {
         return ResponseEntity.ok(submissionService.findAllByHackathon(hackathonId));
     }
 
+    /** GET /api/v1/submissions/hackathon/{hackathonId}/team/{teamName} — returns a team submission */
     @GetMapping("/hackathon/{hackathonId}/team/{teamName}")
     public ResponseEntity<SubmissionResult> getByTeamAndHackathon(@PathVariable Long hackathonId,
                                                                   @PathVariable String teamName) {
         return ResponseEntity.ok(submissionService.findByTeamAndHackathon(teamName, hackathonId));
     }
 
+    /** POST /api/v1/submissions — team member sends a new submission */
     @PostMapping
     public ResponseEntity<SubmissionResult> send(@Valid @RequestBody CreateSubmissionRequest request) {
         CreateSubmissionCommand command = new CreateSubmissionCommand(
@@ -42,6 +49,7 @@ public class UserController {
                 .body(submissionService.sendSubmission(command));
     }
 
+    /** PUT /api/v1/submissions/{id} — team member updates an existing submission */
     @PutMapping("/{id}")
     public ResponseEntity<SubmissionResult> update(@PathVariable Long id,
                                                    @Valid @RequestBody CreateSubmissionRequest request) {

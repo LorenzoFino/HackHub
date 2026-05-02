@@ -14,6 +14,10 @@ import unicam.hackhub.presentation.dto.request.UpdateHackathonRequest;
 
 import java.util.List;
 
+/**
+ * REST controller for hackathon management.
+ * Covers the Organizer use cases from the sequence diagrams.
+ */
 @RestController
 @RequestMapping("/api/v1/hackathons")
 public class HackathonController {
@@ -24,16 +28,19 @@ public class HackathonController {
         this.hackathonService = hackathonService;
     }
 
+    /** GET /api/v1/hackathons — returns all hackathons */
     @GetMapping
     public ResponseEntity<List<HackathonResult>> getAll() {
         return ResponseEntity.ok(hackathonService.findAll());
     }
 
+    /** GET /api/v1/hackathons/{id} — returns a hackathon by id */
     @GetMapping("/{id}")
     public ResponseEntity<HackathonResult> getById(@PathVariable Long id) {
         return ResponseEntity.ok(hackathonService.findById(id));
     }
 
+    /** POST /api/v1/hackathons — creates a new hackathon */
     @PostMapping
     public ResponseEntity<HackathonResult> create(@Valid @RequestBody CreateHackathonRequest request) {
         CreateHackathonCommand command = new CreateHackathonCommand(
@@ -46,6 +53,7 @@ public class HackathonController {
         return ResponseEntity.status(HttpStatus.CREATED).body(hackathonService.createHackathon(command));
     }
 
+    /** PUT /api/v1/hackathons/{id} — updates an existing hackathon (only during the SUBSCRIPTION state) */
     @PutMapping("/{id}")
     public ResponseEntity<HackathonResult> update(@PathVariable Long id,
                                                   @Valid @RequestBody UpdateHackathonRequest request) {
@@ -58,12 +66,14 @@ public class HackathonController {
         return ResponseEntity.ok(hackathonService.updateHackathon(id, command));
     }
 
+    /** DELETE /api/v1/hackathons/{id} — deletes a hackathon (only during the SUBSCRIPTION state) */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         hackathonService.deleteHackathon(id);
         return ResponseEntity.ok().build();
     }
 
+    /** POST /api/v1/hackathons/{id}/mentors/{mentorId} — adds a mentor to the hackathon */
     @PostMapping("/{id}/mentors/{mentorId}")
     public ResponseEntity<Void> addMentor(@PathVariable Long id,
                                           @PathVariable Long mentorId) {
@@ -71,6 +81,7 @@ public class HackathonController {
         return ResponseEntity.ok().build();
     }
 
+    /** POST /api/v1/hackathons/{id}/winner — organizer declares the winning team */
     @PostMapping("/{id}/winner")
     public ResponseEntity<Void> declareWinner(@PathVariable Long id,
                                               @RequestParam String teamName) {
@@ -78,12 +89,14 @@ public class HackathonController {
         return ResponseEntity.ok().build();
     }
 
+    /** POST /api/v1/hackathons/{id}/next-state — advances to the next state (used by scheduler) */
     @PostMapping("/{id}/next-state")
     public ResponseEntity<Void> toNextState(@PathVariable Long id) {
         hackathonService.toNextState(id);
         return ResponseEntity.ok().build();
     }
 
+    /** POST /api/v1/hackathons/{id}/staff/{staffId}/ruolo — assigns a role to a staff member */
     @PostMapping("/{id}/staff/{staffId}/ruolo")
     public ResponseEntity<RoleAssignment> roleAssign(@PathVariable Long id,
                                                      @PathVariable Long staffId,

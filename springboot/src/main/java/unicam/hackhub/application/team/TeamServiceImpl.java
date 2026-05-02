@@ -1,19 +1,21 @@
 package unicam.hackhub.application.team;
 
 import org.springframework.stereotype.Service;
-import unicam.hackhub.domain.model.*;
-import unicam.hackhub.domain.repository.HackathonRepository;
-import unicam.hackhub.domain.repository.InvitationRepository;
-import unicam.hackhub.domain.repository.TeamRepository;
-import unicam.hackhub.domain.repository.UserRepository;
+import unicam.hackhub.application.dto.command.CreateTeamCommand;
 import unicam.hackhub.domain.exception.*;
+import unicam.hackhub.domain.model.*;
+import unicam.hackhub.domain.repository.*;
+import unicam.hackhub.presentation.dto.mapper.InvitationMapper;
+import unicam.hackhub.presentation.dto.mapper.TeamMapper;
+import unicam.hackhub.presentation.dto.response.InvitationResponse;
+import unicam.hackhub.presentation.dto.response.TeamResponse;
 
 import java.time.LocalDate;
 import java.util.List;
 
 /**
  * Implementation of TeamService.
- * Orchestrates domain objects and repositories.
+ * Orchestrates domain objects, repositories and exception handling.
  */
 @Service
 public class TeamServiceImpl implements TeamService {
@@ -22,40 +24,45 @@ public class TeamServiceImpl implements TeamService {
     private final UserRepository userRepository;
     private final InvitationRepository invitationRepository;
     private final HackathonRepository hackathonRepository;
+    private final TeamMapper teamMapper;
+    private final InvitationMapper invitationMapper;
 
     public TeamServiceImpl(TeamRepository teamRepository,
                            UserRepository userRepository,
                            InvitationRepository invitationRepository,
-                           HackathonRepository hackathonRepository) {
+                           HackathonRepository hackathonRepository,
+                           TeamMapper teamMapper,
+                           InvitationMapper invitationMapper) {
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
         this.invitationRepository = invitationRepository;
         this.hackathonRepository = hackathonRepository;
+        this.teamMapper = teamMapper;
+        this.invitationMapper = invitationMapper;
     }
 
     @Override
-    public Team createTeam(String teamName, String userEmail) {
-        if (teamRepository.existsById(teamName))
-            throw new IllegalArgumentException("Team name already taken: " + teamName);
+    public TeamResponse createTeam(CreateTeamCommand command) {
+        if (teamRepository.existsById(command.teamName()))
+            throw new IllegalArgumentException("Team name already taken: " + command.teamName());
 
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UserNotFoundException(userEmail));
+        User user = userRepository.findByEmail(command.creatorEmail())
+                .orElseThrow(() -> new UserNotFoundException(command.creatorEmail()));
 
         if (user.hasTeam())
-            throw new UserAlreadyInTeamException(userEmail);
+            throw new UserAlreadyInTeamException(command.creatorEmail());
 
-        Team team = new Team(teamName, user);
+        Team team = new Team(command.teamName(), user);
         user.setTeam(team);
-
         teamRepository.save(team);
         userRepository.save(user);
 
-        return team;
+        return teamMapper.toResponse(team);
     }
 
     @Override
-    public Invitation sendInvitation(String teamName, String recipientEmail) {
-        Team team = findByName(teamName);
+    public InvitationResponse sendInvitation(String teamName, String recipientEmail) {
+        Team team = getByName(teamName);
 
         if (hackathonRepository.existsByRegisteredTeams_Name(teamName))
             throw new IllegalStateException("Cannot invite members while the team is registered in a hackathon");
@@ -67,7 +74,7 @@ public class TeamServiceImpl implements TeamService {
             throw new UserAlreadyInTeamException(recipientEmail);
 
         Invitation invitation = new Invitation(recipient, team, LocalDate.now());
-        return invitationRepository.save(invitation);
+        return invitationMapper.toResponse(invitationRepository.save(invitation));
     }
 
     @Override
@@ -79,18 +86,16 @@ public class TeamServiceImpl implements TeamService {
             throw new IllegalStateException("Invitation is no longer pending");
 
         User recipient = invitation.getRecipient();
-
         if (recipient.hasTeam())
             throw new UserAlreadyInTeamException(recipient.getEmail());
 
         Team team = invitation.getTeam();
-
         recipient.setTeam(team);
         team.addMember(recipient);
         invitation.setStatus(Invitation.InvitationStatus.ACCEPTED);
 
         userRepository.save(recipient);
-        teamRepository.save(invitation.getTeam());
+        teamRepository.save(team);
         invitationRepository.save(invitation);
     }
 
@@ -98,14 +103,13 @@ public class TeamServiceImpl implements TeamService {
     public void declineInvitation(Long invitationId) {
         Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new InvitationNotFoundException(invitationId));
-
         invitation.setStatus(Invitation.InvitationStatus.DECLINED);
         invitationRepository.save(invitation);
     }
 
     @Override
     public void leaveTeam(String teamName, String userEmail) {
-        Team team = findByName(teamName);
+        Team team = getByName(teamName);
 
         if (hackathonRepository.existsByRegisteredTeams_Name(teamName))
             throw new IllegalStateException("Cannot leave a team that is registered in a hackathon");
@@ -121,14 +125,13 @@ public class TeamServiceImpl implements TeamService {
 
         team.removeMember(user);
         user.setTeam(null);
-
         userRepository.save(user);
         teamRepository.save(team);
     }
 
     @Override
     public void deleteTeam(String teamName, String creatorEmail) {
-        Team team = findByName(teamName);
+        Team team = getByName(teamName);
 
         if (!team.isCreator(creatorEmail))
             throw new IllegalStateException("Only the creator can delete the team");
@@ -136,11 +139,9 @@ public class TeamServiceImpl implements TeamService {
         if (hackathonRepository.existsByRegisteredTeams_Name(teamName))
             throw new IllegalStateException("Cannot delete a team that is registered in a hackathon");
 
-        // Cancel ALL invitations for this team regardless of status
+        // Cancel all invitations for this team regardless of status
         List<Invitation> allInvitations = invitationRepository.findAllByTeam_Name(teamName);
-        for (Invitation inv : allInvitations) {
-            invitationRepository.delete(inv);
-        }
+        allInvitations.forEach(invitationRepository::delete);
 
         // Detach all members from the team
         for (User member : team.getMembers()) {
@@ -149,13 +150,12 @@ public class TeamServiceImpl implements TeamService {
         }
         team.getMembers().clear();
         teamRepository.save(team);
-
         teamRepository.delete(team);
     }
 
     @Override
     public void unregisterTeam(String teamName, Long hackathonId) {
-        Team team = findByName(teamName);
+        Team team = getByName(teamName);
 
         Hackathon hackathon = hackathonRepository.findById(hackathonId)
                 .orElseThrow(() -> new HackathonNotFoundException(hackathonId));
@@ -168,7 +168,12 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
-    public Team findByName(String teamName) {
+    public TeamResponse findByName(String teamName) {
+        return teamMapper.toResponse(getByName(teamName));
+    }
+
+    /** Internal helper to load Team entity by name */
+    private Team getByName(String teamName) {
         return teamRepository.findById(teamName)
                 .orElseThrow(() -> new TeamNotFoundException(teamName));
     }

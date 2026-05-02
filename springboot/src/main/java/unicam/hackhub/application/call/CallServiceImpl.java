@@ -1,19 +1,19 @@
 package unicam.hackhub.application.call;
 
 import org.springframework.stereotype.Service;
-import unicam.hackhub.domain.model.MentorCall;
-import unicam.hackhub.domain.model.SupportRequest;
-import unicam.hackhub.domain.repository.CallRepository;
-import unicam.hackhub.domain.repository.SupportRequestRepository;
-import unicam.hackhub.infrastructure.services.calendar.MockCalendarAdapter;
 import unicam.hackhub.domain.exception.*;
+import unicam.hackhub.domain.model.*;
+import unicam.hackhub.domain.repository.*;
+import unicam.hackhub.infrastructure.services.calendar.MockCalendarAdapter;
+import unicam.hackhub.presentation.dto.mapper.SupportRequestMapper;
+import unicam.hackhub.presentation.dto.response.SupportRequestResponse;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * Implementation of CallService.
- * Orchestrates domain objects, repositories and the external Calendar adapter.
+ * Orchestrates domain objects, repositories, exception handling
+ * and the external Calendar adapter.
  */
 @Service
 public class CallServiceImpl implements CallService {
@@ -21,17 +21,20 @@ public class CallServiceImpl implements CallService {
     private final CallRepository callRepository;
     private final SupportRequestRepository supportRequestRepository;
     private final MockCalendarAdapter calendarAdapter;
+    private final SupportRequestMapper supportRequestMapper;
 
     public CallServiceImpl(CallRepository callRepository,
                            SupportRequestRepository supportRequestRepository,
-                           MockCalendarAdapter calendarAdapter) {
+                           MockCalendarAdapter calendarAdapter,
+                           SupportRequestMapper supportRequestMapper) {
         this.callRepository = callRepository;
         this.supportRequestRepository = supportRequestRepository;
         this.calendarAdapter = calendarAdapter;
+        this.supportRequestMapper = supportRequestMapper;
     }
 
     @Override
-    public MentorCall proposeCall(Long supportRequestId, LocalDate date, Integer duration) {
+    public SupportRequestResponse proposeCall(Long supportRequestId, LocalDate date, Integer duration) {
         SupportRequest supportRequest = supportRequestRepository.findById(supportRequestId)
                 .orElseThrow(() -> new SupportRequestNotFoundException(supportRequestId));
 
@@ -43,40 +46,27 @@ public class CallServiceImpl implements CallService {
                 .orElseThrow(() -> new IllegalStateException("No mentor assigned"))
                 .getEmail();
 
-        String teamName = supportRequest.getTeam().getName();
-
         // Book slot via external Calendar system
-        String link = calendarAdapter.bookSlot(mentorEmail, teamName, date, duration);
+        String link = calendarAdapter.bookSlot(mentorEmail,
+                supportRequest.getTeam().getName(), date, duration);
 
-        // Create the call
+        // Create the call and update support request status
         MentorCall call = new MentorCall(link, date, duration, supportRequest);
-
-        // Update support request status
         supportRequest.setStatus(SupportRequest.RequestStatus.ACCEPTED);
         supportRequestRepository.save(supportRequest);
+        callRepository.save(call);
 
-        return callRepository.save(call);
+        return supportRequestMapper.toResponse(supportRequest);
     }
 
     @Override
     public void cancelCall(Long callId) {
-        MentorCall call = findById(callId);
+        MentorCall call = callRepository.findById(callId)
+                .orElseThrow(() -> new CallNotFoundException(callId));
 
-        // Cancel slot via external Calendar system
+        // Release the Calendar slot
         calendarAdapter.cancelSlot(call.getLink());
-
         call.setStatus(MentorCall.CallStatus.CANCELLED);
         callRepository.save(call);
-    }
-
-    @Override
-    public MentorCall findById(Long callId) {
-        return callRepository.findById(callId)
-                .orElseThrow(() -> new CallNotFoundException(callId));
-    }
-
-    @Override
-    public List<MentorCall> findAllBySupportRequest(Long supportRequestId) {
-        return callRepository.findAllBySupportRequestId(supportRequestId);
     }
 }

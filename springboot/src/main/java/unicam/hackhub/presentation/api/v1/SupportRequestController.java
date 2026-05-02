@@ -1,12 +1,13 @@
 package unicam.hackhub.presentation.api.v1;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import unicam.hackhub.application.dto.command.CreateSupportRequestCommand;
 import unicam.hackhub.application.support.SupportRequestService;
-import unicam.hackhub.domain.model.Hackathon;
-import unicam.hackhub.domain.model.SupportRequest;
-import unicam.hackhub.domain.model.Team;
+import unicam.hackhub.presentation.dto.request.CreateSupportRequestRequest;
+import unicam.hackhub.presentation.dto.response.SupportRequestResponse;
 
 import java.util.List;
 
@@ -26,40 +27,30 @@ public class SupportRequestController {
 
     /** GET /api/v1/support-requests/hackathon/{hackathonId} — returns all requests for a hackathon */
     @GetMapping("/hackathon/{hackathonId}")
-    public ResponseEntity<List<SupportRequest>> getAllByHackathon(@PathVariable Long hackathonId) {
+    public ResponseEntity<List<SupportRequestResponse>> getAllByHackathon(@PathVariable Long hackathonId) {
         return ResponseEntity.ok(supportRequestService.findAllByHackathon(hackathonId));
     }
 
     /** GET /api/v1/support-requests/team/{teamName} — returns all requests by a team */
     @GetMapping("/team/{teamName}")
-    public ResponseEntity<List<SupportRequest>> getAllByTeam(@PathVariable String teamName) {
+    public ResponseEntity<List<SupportRequestResponse>> getAllByTeam(@PathVariable String teamName) {
         return ResponseEntity.ok(supportRequestService.findAllByTeam(teamName));
     }
 
     /** GET /api/v1/support-requests/{id} — returns a support request by id */
     @GetMapping("/{id}")
-    public ResponseEntity<SupportRequest> getById(@PathVariable Long id) {
+    public ResponseEntity<SupportRequestResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(supportRequestService.findById(id));
     }
 
     /** POST /api/v1/support-requests — sends a new support request */
     @PostMapping
-    public ResponseEntity<SupportRequest> send(@RequestParam String teamName,
-                                               @RequestParam Long hackathonId,
-                                               @RequestParam String description) {
-        SupportRequest request = new SupportRequest();
-        request.setDescription(description);
-
-        Team team = new Team();
-        team.setName(teamName);
-        request.setTeam(team);
-
-        Hackathon hackathon = new Hackathon();
-        hackathon.setId(hackathonId);
-        request.setHackathon(hackathon);
-
+    public ResponseEntity<SupportRequestResponse> send(@Valid @RequestBody CreateSupportRequestRequest request) {
+        CreateSupportRequestCommand command = new CreateSupportRequestCommand(
+                request.description(), request.teamName(), request.hackathonId()
+        );
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(supportRequestService.sendSupportRequest(request));
+                .body(supportRequestService.sendSupportRequest(command));
     }
 
     /** DELETE /api/v1/support-requests/{id} — cancels a support request */

@@ -57,4 +57,13 @@ public class MockEmailAdapter {
         }
         System.out.println("[EMAIL] Cancellation notifications sent successfully.");
     }
+
+    /**
+     * Sends a password reset email to the given address.
+     *
+     * @param email email of the user requesting password reset
+     */
+    public void sendPasswordResetEmail(String email) {
+        System.out.println("[EMAIL] Sending password reset email to: " + email);
+    }
 }

@@ -16,6 +16,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Implementation of HackathonService.
+ * Orchestrates domain objects, repositories, external adapters and exception handling.
+ */
 @Service
 public class HackathonServiceImpl implements HackathonService {
 
@@ -69,6 +73,7 @@ public class HackathonServiceImpl implements HackathonService {
         if (hackathon.getCurrentState() != HackathonStatus.StateType.SUBSCRIPTION)
             throw new InvalidHackathonStateException("Hackathon can only be updated during SUBSCRIPTION");
 
+        // Save registered teams before update for email notification
         Set<Team> registeredTeams = new HashSet<>(hackathon.getRegisteredTeams());
 
         hackathon.setName(command.name());
@@ -83,6 +88,7 @@ public class HackathonServiceImpl implements HackathonService {
 
         Hackathon saved = hackathonRepository.save(hackathon);
 
+        // Notify registered teams via EmailSystem if any
         if (!registeredTeams.isEmpty())
             emailAdapter.sendModificationNotification(registeredTeams, saved);
 
@@ -97,11 +103,17 @@ public class HackathonServiceImpl implements HackathonService {
         if (hackathon.getCurrentState() != HackathonStatus.StateType.SUBSCRIPTION)
             throw new InvalidHackathonStateException("Hackathon can only be deleted during SUBSCRIPTION");
 
+        // Save registered teams before deletion for email notification
         Set<Team> registeredTeams = new HashSet<>(hackathon.getRegisteredTeams());
+
+        // Delete all related support requests to avoid referential integrity violations
         supportRequestRepository.deleteAllByHackathonId(hackathonId);
+
+        // Unregister all teams
         hackathon.getRegisteredTeams().clear();
         hackathonRepository.save(hackathon);
 
+        // Notify teams via EmailSystem if any
         if (!registeredTeams.isEmpty())
             emailAdapter.sendCancellationNotification(registeredTeams, hackathon);
 
@@ -131,6 +143,7 @@ public class HackathonServiceImpl implements HackathonService {
         Hackathon hackathon = getById(hackathonId);
         hackathon.declareWinner(teamName);
 
+        // Process prize payment via external payment system
         boolean paymentSuccess = paymentAdapter.processPayment(teamName, hackathon.getPrize());
         if (!paymentSuccess)
             throw new InvalidHackathonStateException("Payment failed for team: " + teamName);
@@ -164,7 +177,7 @@ public class HackathonServiceImpl implements HackathonService {
         return roleAssignmentRepository.save(assignment);
     }
 
-    /** Internal helper to load Hackathon entity */
+    /** Internal helper to load Hackathon entity by id */
     private Hackathon getById(Long id) {
         return hackathonRepository.findById(id)
                 .orElseThrow(() -> new HackathonNotFoundException(id));

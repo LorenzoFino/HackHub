@@ -11,6 +11,10 @@ import unicam.hackhub.domain.repository.*;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Implementation of SubmissionService.
+ * Orchestrates domain objects, repositories and exception handling.
+ */
 @Service
 public class SubmissionServiceImpl implements SubmissionService {
 
