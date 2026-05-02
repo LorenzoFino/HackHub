@@ -1,49 +1,60 @@
 package unicam.hackhub.presentation.exception;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import unicam.hackhub.domain.exception.*;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
-/**
- * Global exception handler for the REST API.
- * Catches exceptions thrown by the application and returns
- * a structured JSON error response.
- * Excludes H2 console requests.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /** Handles invalid arguments — e.g. team not found, hackathon not found */
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex,
-                                                                     HttpServletRequest request) {
-        if (request.getRequestURI().startsWith("/h2-console"))
-            return null;
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    // 404 Not Found
+    @ExceptionHandler({
+            HackathonNotFoundException.class,
+            TeamNotFoundException.class,
+            UserNotFoundException.class,
+            StaffNotFoundException.class,
+            SubmissionNotFoundException.class,
+            ValuationNotFoundException.class,
+            ReportNotFoundException.class,
+            SupportRequestNotFoundException.class,
+            InvitationNotFoundException.class,
+            CallNotFoundException.class
+    })
+    public ResponseEntity<Map<String, Object>> handleNotFound(RuntimeException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    /** Handles invalid state transitions — e.g. registering a team when deadline has passed */
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex,
-                                                                  HttpServletRequest request) {
-        if (request.getRequestURI().startsWith("/h2-console"))
-            return null;
+    // 409 Conflict
+    @ExceptionHandler({
+            InvalidHackathonStateException.class,
+            TeamAlreadyRegisteredException.class,
+            UserAlreadyInTeamException.class,
+            MentorAlreadyAssignedException.class,
+            SubmissionAlreadyExistsException.class
+    })
+    public ResponseEntity<Map<String, Object>> handleConflict(RuntimeException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
-    /** Handles any other unexpected exception */
+    // 400 Bad Request
+    @ExceptionHandler({
+            InvalidVoteException.class,
+            RegistrationDeadlinePassedException.class,
+            IllegalArgumentException.class
+    })
+    public ResponseEntity<Map<String, Object>> handleBadRequest(RuntimeException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    // 500 Internal Server Error — fallback
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex,
-                                                             HttpServletRequest request) {
-        if (request.getRequestURI().startsWith("/h2-console"))
-            return null;
-        ex.printStackTrace();
+    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 
