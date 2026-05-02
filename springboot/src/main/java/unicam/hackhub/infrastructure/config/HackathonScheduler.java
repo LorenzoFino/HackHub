@@ -27,7 +27,7 @@ public class HackathonScheduler {
      * Runs every minute and advances hackathon states when dates allow.
      * In production this could run less frequently (e.g. every hour).
      */
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 1200000)
     public void advanceHackathonStates() {
         List<Hackathon> hackathons = hackathonRepository.findAll();
         for (Hackathon hackathon : hackathons) {
