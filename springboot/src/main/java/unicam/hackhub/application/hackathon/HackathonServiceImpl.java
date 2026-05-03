@@ -30,6 +30,7 @@ public class HackathonServiceImpl implements HackathonService {
     private final MockPaymentAdapter paymentAdapter;
     private final MockEmailAdapter emailAdapter;
     private final HackathonResultMapper mapper;
+    private final TeamRepository teamRepository;
 
     public HackathonServiceImpl(HackathonRepository hackathonRepository,
                                 StaffRepository staffRepository,
@@ -37,7 +38,8 @@ public class HackathonServiceImpl implements HackathonService {
                                 SupportRequestRepository supportRequestRepository,
                                 MockPaymentAdapter paymentAdapter,
                                 MockEmailAdapter emailAdapter,
-                                HackathonResultMapper mapper) {
+                                HackathonResultMapper mapper,
+                                TeamRepository teamRepository) {
         this.hackathonRepository = hackathonRepository;
         this.staffRepository = staffRepository;
         this.roleAssignmentRepository = roleAssignmentRepository;
@@ -45,6 +47,7 @@ public class HackathonServiceImpl implements HackathonService {
         this.paymentAdapter = paymentAdapter;
         this.emailAdapter = emailAdapter;
         this.mapper = mapper;
+        this.teamRepository = teamRepository;
     }
 
     @Override
@@ -64,6 +67,15 @@ public class HackathonServiceImpl implements HackathonService {
                 organizer, judge, Set.of(mentor)
         );
         return mapper.toResult(hackathonRepository.save(hackathon));
+    }
+
+    @Override
+    public void registerTeam(Long hackathonId, String teamName) {
+        Hackathon hackathon = getById(hackathonId);
+        Team team = teamRepository.findById(teamName)
+                .orElseThrow(() -> new TeamNotFoundException(teamName));
+        hackathon.registerTeam(team);
+        hackathonRepository.save(hackathon);
     }
 
     @Override

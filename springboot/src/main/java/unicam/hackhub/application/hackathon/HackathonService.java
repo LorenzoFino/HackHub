@@ -19,6 +19,9 @@ public interface HackathonService {
      */
     HackathonResult createHackathon(CreateHackathonCommand command);
 
+    /** Registers a team to a hackathon — only allowed during the SUBSCRIPTION state */
+    void registerTeam(Long hackathonId, String teamName);
+
     /**
      * Updates an existing hackathon — only allowed during the SUBSCRIPTION state.
      * Notifies registered teams via email if any.

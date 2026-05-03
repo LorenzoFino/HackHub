@@ -104,4 +104,12 @@ public class HackathonController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(hackathonService.roleAssign(id, staffId, role));
     }
+
+    /** POST /api/v1/hackathons/{id}/teams — registers a team to a hackathon */
+    @PostMapping("/{id}/teams")
+    public ResponseEntity<Void> registerTeam(@PathVariable Long id,
+                                             @RequestParam String teamName) {
+        hackathonService.registerTeam(id, teamName);
+        return ResponseEntity.ok().build();
+    }
 }
