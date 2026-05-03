@@ -22,7 +22,7 @@ public class MockCalendarAdapter {
      * @return the generated call link
      */
     public String bookSlot(String mentorEmail, String teamName,
-                           LocalDate date, int duration) {
+                           LocalDate date, Integer duration) {
         if (mentorEmail == null || teamName == null || date == null || duration <= 0) {
             throw new IllegalArgumentException("Invalid booking request");
         }

@@ -12,6 +12,6 @@ public record UpdateHackathonRequest(
         @NotNull LocalDate startDate,
         @NotNull LocalDate endDate,
         @NotBlank String location,
-        @Min(1) @Max(20) int maxTeamSize,
+        @Min(1) @Max(20) Integer maxTeamSize,
         @PositiveOrZero double prize
 ) {}
