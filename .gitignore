@@ -32,3 +32,6 @@ build/
 ### VS Code ###
 .vscode/
 springboot/hackhubdb.mv.db
+
+### Visual Paradigm ###
+*.bak_*
