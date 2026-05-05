@@ -185,7 +185,7 @@ HackHub/
 │       ├── infrastructure/        # JPA, adapter esterni, sicurezza JWT, scheduler
 │       └── presentation/          # Controller REST, DTO request/response, mapper
 ├── uml/
-│   └── HackHub.vpp                # Modello UML Visual Paradigm (tutte le iterazioni)
+│   └── Progetto_HackHub.vpp       # Modello UML Visual Paradigm (tutte le iterazioni)
 ├── HackHub_postman_collection.json
 └── README.md
 
@@ -193,7 +193,7 @@ HackHub/
 
 ## Diagrammi UML
 
-Il file `uml/HackHub.vpp` contiene il modello UML completo organizzato per iterazione:
+Il file `uml/Progetto_HackHub.vpp` contiene il modello UML completo organizzato per iterazione:
 
 - **Diagrammi dei casi d'uso** — attori e funzionalità per iterazione
 - **Diagrammi delle classi di analisi** — entità concettuali e relazioni
@@ -378,7 +378,7 @@ HackHub/
 │       ├── infrastructure/        # JPA, external adapters, JWT security, scheduler
 │       └── presentation/          # REST controllers, request/response DTOs, mappers
 ├── uml/
-│   └── HackHub.vpp                # Visual Paradigm UML model (all iterations)
+│   └── Progetto_HackHub.vpp       # Visual Paradigm UML model (all iterations)
 ├── HackHub_postman_collection.json
 └── README.md
 
@@ -386,7 +386,7 @@ HackHub/
 
 ## UML Diagrams
 
-The file `uml/HackHub.vpp` contains the complete UML model organized by iteration:
+The file `uml/Progetto_HackHub.vpp` contains the complete UML model organized by iteration:
 
 - **Use case diagrams** — actors and features per iteration
 - **Analysis class diagrams** — conceptual entities and relationships
