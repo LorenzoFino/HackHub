@@ -6,6 +6,15 @@
 
 ---
 
+## Indice / Table of Contents
+
+- 🇮🇹 [Italiano](#-hackhub--italiano)
+- 🇬🇧 [English](#-hackhub--english)
+
+---
+
+# 🇮🇹 HackHub — Italiano
+
 ## Indice
 
 - [Descrizione del Progetto](#descrizione-del-progetto)
@@ -108,7 +117,6 @@ mvn spring-boot:run
 **Il server è avviato correttamente quando compare:**
 [DataInitializer] Test data loaded successfully
 Started HackHubApplication in X.XXX seconds
-
 Il server è raggiungibile su **http://localhost:8080**
 
 ### Dati di Test
@@ -139,7 +147,7 @@ La collection Postman completa è disponibile nel file `HackHub_postman_collecti
 
 ### Autenticazione
 
-Tutti gli endpoint (eccetto GET /hackathons e /auth/**) richiedono un Bearer Token JWT.
+Tutti gli endpoint (eccetto `GET /hackathons` e `/auth/**`) richiedono un Bearer Token JWT.
 
 **Ottieni il token:**
 POST http://localhost:8080/api/v1/auth/login
@@ -193,3 +201,196 @@ Il file `uml/HackHub.vpp` contiene il modello UML completo organizzato per itera
 - **Diagrammi di sequenza** — flusso di interazione per i principali scenari
 
 Per visualizzare il file è necessario **Visual Paradigm** (edizione Community o superiore).
+
+---
+
+---
+
+# 🇬🇧 HackHub — English
+
+## Table of Contents
+
+- [Project Description](#project-description)
+- [Architecture](#architecture)
+- [Design Patterns Applied](#design-patterns-applied)
+- [Iterations](#iterations)
+- [Setup and Running](#setup-and-running)
+- [REST API — Postman](#rest-api--postman)
+
+---
+
+## Project Description
+
+**HackHub** is a software platform for the complete lifecycle management of a university hackathon. The system supports the main actors involved — organizers, participants (team members), mentors and judges — and covers all operational phases: from publication and registration, through project submission, to evaluation and winner announcement.
+
+The project was developed as part of the **Software Engineering** course at the **University of Camerino**, following the **Unified Process (UP)** structured in five incremental iterations. For each iteration the following artifacts were produced:
+
+- Use case diagram
+- Analysis and design class diagram
+- Sequence diagrams for the main use cases
+- Corresponding Java implementation
+
+---
+
+## Architecture
+
+The system adopts a layered architecture with clear separation of concerns:
+Presentation  →  Application  →  Domain  →  Infrastructure
+| Layer | Responsibility |
+|---|---|
+| **presentation** | REST controllers, request/response DTOs, mappers, HTTP exception handling |
+| **application** | Service layer, business logic orchestration, command/result DTOs |
+| **domain** | Domain entities, repository interfaces, custom exceptions, State/Observer patterns |
+| **infrastructure** | JPA implementations, external adapters (Calendar, Payment, Email), JWT security |
+
+### Technology Stack
+
+| Component | Technology |
+|---|---|
+| Language | Java 17 |
+| Framework | Spring Boot 4.0 |
+| Database | H2 (in-memory, create-drop) |
+| Security | Spring Security + JWT |
+| Build tool | Maven |
+| UML | Visual Paradigm (`.vpp`) |
+
+---
+
+## Design Patterns Applied
+
+### State — Hackathon Lifecycle
+
+The hackathon lifecycle is modeled with the **State** pattern. The `Hackathon` class acts as the Context and delegates operations to the current state:
+Registration → InProgress → InEvaluation → Concluded
+Each state defines which operations are permitted and throws appropriate exceptions for invalid transitions. State transitions happen automatically via `HackathonScheduler` (Tempo actor) or manually by the organizer (winner proclamation).
+
+### Observer — State Change Notifications
+
+The **Observer** pattern is applied to decouple the hackathon from notification logic. The `HackathonObservable` and `HackathonObserver` interfaces allow `JudgeNotificationObserver` and `TeamNotificationObserver` to react to state changes without direct coupling.
+
+---
+
+## Iterations
+
+| Iteration | Implemented use cases |
+|---|---|
+| **IT1** | Create hackathon · Register team to hackathon · Submit project · Proclaim winner · Release valuation |
+| **IT2** | Create team · Update submission · Add mentors · Propose call to team |
+| **IT3** | Manage invitation · Leave team · Invite to team · Delete team · Unregister team · Mentor support management · Book slot · View support requests · Report team · Manage violations |
+| **IT4** | Edit hackathon · Delete hackathon · Prize disbursement · Edit valuation · Browse hackathon list · View submission |
+| **IT5** | Register to system · Authenticate to system · Password recovery · Profile management |
+
+---
+
+## Setup and Running
+
+### Prerequisites
+
+- Java 17 or higher
+- Maven 3.x
+- IntelliJ IDEA (recommended)
+
+### Running
+
+**1. Clone the repository:**
+```bash
+git clone https://github.com/LorenzoFino/HackHub.git
+cd HackHub/springboot
+```
+
+**2. Start with Maven:**
+```bash
+mvn spring-boot:run
+```
+
+**Or with IntelliJ:**
+1. Open the `springboot` folder as a Maven project
+2. Run `HackHubApplication.java`
+
+**The server has started correctly when the log shows:**
+[DataInitializer] Test data loaded successfully
+Started HackHubApplication in X.XXX seconds
+The server is available at **http://localhost:8080**
+
+### Test Data
+
+The `DataInitializer` automatically populates the database on every startup with:
+
+| Role | Email | Password |
+|---|---|---|
+| Organizer | mario@hackhub.com | password |
+| Judge | anna@hackhub.com | password |
+| Mentor | luca@hackhub.com | password |
+| User | giuseppe@mail.com | password |
+| User | sara@mail.com | password |
+| User | marco@mail.com | password |
+
+**Pre-loaded hackathons:**
+- Hackathon 1 — SUBSCRIPTION state
+- Hackathon 2 — PROGRESS state (with test submission)
+- Hackathon 3 — EVALUATION state (after ~2 minutes from scheduler)
+
+> ⚠️ The H2 database is in-memory with `create-drop`: it resets on every restart.
+
+---
+
+## REST API — Postman
+
+The complete Postman collection is available in the file `HackHub_postman_collection.json` in the repository root.
+
+### Authentication
+
+All endpoints (except `GET /hackathons` and `/auth/**`) require a JWT Bearer Token.
+
+**Get the token:**
+POST http://localhost:8080/api/v1/auth/login
+Body: { "email": "mario@hackhub.com", "password": "password" }
+Copy the `token` field from the response and paste it in Postman under **Authorization → Bearer Token**.
+
+### Main Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/v1/auth/register` | Register new user |
+| POST | `/api/v1/auth/login` | Login and get JWT token |
+| POST | `/api/v1/auth/forgot-password` | Password recovery |
+| GET | `/api/v1/hackathons` | List all hackathons |
+| POST | `/api/v1/hackathons` | Create new hackathon |
+| PUT | `/api/v1/hackathons/{id}` | Edit hackathon |
+| DELETE | `/api/v1/hackathons/{id}` | Delete hackathon |
+| POST | `/api/v1/hackathons/{id}/winner` | Proclaim winner |
+| POST | `/api/v1/teams` | Create team |
+| POST | `/api/v1/teams/{name}/invitations` | Send invitation |
+| POST | `/api/v1/submissions` | Submit project |
+| POST | `/api/v1/valuations` | Release valuation |
+| POST | `/api/v1/reports` | Report team |
+| POST | `/api/v1/support-requests` | Send support request |
+| POST | `/api/v1/calls` | Propose call |
+
+---
+
+## Repository Structure
+HackHub/
+├── springboot/                    # Spring Boot project
+│   └── src/main/java/unicam/hackhub/
+│       ├── domain/                # Entities, repositories, exceptions, State/Observer patterns
+│       ├── application/           # Service layer, command/result DTOs, mappers
+│       ├── infrastructure/        # JPA, external adapters, JWT security, scheduler
+│       └── presentation/          # REST controllers, request/response DTOs, mappers
+├── uml/
+│   └── HackHub.vpp                # Visual Paradigm UML model (all iterations)
+├── HackHub_postman_collection.json
+└── README.md
+
+---
+
+## UML Diagrams
+
+The file `uml/HackHub.vpp` contains the complete UML model organized by iteration:
+
+- **Use case diagrams** — actors and features per iteration
+- **Analysis class diagrams** — conceptual entities and relationships
+- **Design class diagrams** — technical structure with packages and dependencies
+- **Sequence diagrams** — interaction flow for the main scenarios
+
+**Visual Paradigm** (Community edition or higher) is required to open the file.
